@@ -1,6 +1,8 @@
 # DAWG GAMMIT shop window, as deployed on the Hostinger VPS (Docker manager project "dawggammit").
 # Project environment (set on the server only):
-#   SITE_HOSTS = the domains Caddy serves, comma separated, e.g. "dawggamit.com, www.dawggamit.com"
+#   SITE_HOSTS     = the main domains Caddy serves the site on, e.g. "dawggammit.com, www.dawggammit.com"
+#   MAIN_HOST      = the one address every other domain redirects to, e.g. "dawggammit.com"
+#   REDIRECT_HOSTS = extra domains that permanently redirect to MAIN_HOST, e.g. "dawggamit.com, www.dawggamit.com"
 # Updating: push to main, then restart the project (the container clones main on start).
 services:
   web:
@@ -10,6 +12,8 @@ services:
       caddy: ${SITE_HOSTS}
       caddy.reverse_proxy: "{{upstreams 80}}"
       caddy.encode: gzip
+      caddy_1: ${REDIRECT_HOSTS}
+      caddy_1.redir: "https://${MAIN_HOST}{uri} permanent"
     networks:
       - web
     restart: unless-stopped
