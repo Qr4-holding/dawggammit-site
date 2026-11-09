@@ -1,0 +1,18 @@
+# DAWG GAMMIT shop window, as deployed on the Hostinger VPS (Docker manager project "dawggammit").
+# Project environment (set on the server only):
+#   SITE_HOSTS = the domains Caddy serves, comma separated, e.g. "dawggamit.com, www.dawggamit.com"
+# Updating: push to main, then restart the project (the container clones main on start).
+services:
+  web:
+    image: nginx:1.27-alpine
+    command: ["sh", "-c", "apk add --no-cache git >/dev/null && rm -rf /src && git clone --depth 1 https://github.com/Qr4-holding/dawggammit-site.git /src && cp -r /src/site/. /usr/share/nginx/html/ && exec nginx -g 'daemon off;'"]
+    labels:
+      caddy: ${SITE_HOSTS}
+      caddy.reverse_proxy: "{{upstreams 80}}"
+      caddy.encode: gzip
+    networks:
+      - web
+    restart: unless-stopped
+networks:
+  web:
+    external: true
