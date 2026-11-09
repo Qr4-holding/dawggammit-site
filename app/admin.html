@@ -125,6 +125,15 @@ select,input[type=text]{border:1.5px solid var(--line);border-radius:4px;padding
 .lk-btns .wide{grid-column:1/-1}
 .lk-btns .danger{color:#b0451c}
 label.ib{cursor:pointer}
+.msgs{display:flex;flex-direction:column;gap:10px;max-height:560px;overflow:auto}
+.msg{border:1px solid var(--line);border-left:4px solid var(--line);border-radius:5px;background:var(--bg);padding:12px;display:flex;flex-direction:column;gap:8px}
+.msg.unread{border-left-color:var(--accent);background:var(--panel)}
+.msg-h{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.msg-h b{font-size:1rem}
+.msg-h .when{color:var(--muted);font-size:.85rem;margin-left:auto}
+.msg-meta{color:var(--muted);font-size:.9rem;overflow-wrap:anywhere}
+.msg-t{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;line-height:1.5}
+.msg .row{gap:8px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:.75em 1.1em;border-radius:5px;font-size:.9rem;display:flex;gap:14px;align-items:center;max-width:calc(100% - 32px);z-index:30;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .toast button{background:none;border:0;color:var(--tan);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .how{font-size:.86rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin:0}
@@ -145,6 +154,17 @@ a.btn{text-decoration:none;color:inherit;display:inline-block}
   <a class="btn" href="/admin/logout">Sign out</a>
 </div></header>
 
+<div class="wrap" style="padding-block:20px 0">
+  <section class="panel" aria-labelledby="h-msg">
+    <div class="row" style="justify-content:space-between">
+      <h2 id="h-msg">Messages from the contact form <span class="chip new" id="msg-new" hidden></span></h2>
+      <div class="row"><label class="lab" for="msg-filter">Show</label>
+        <select id="msg-filter"><option value="">All enquiries</option><option value="unread">Not yet read</option><option value="customer">Customers</option><option value="licensing">Licensing</option><option value="wholesale">Wholesale or stockist</option><option value="press">Press or other</option></select></div>
+    </div>
+    <p class="hint">Enquiries sent from the Contact page arrive here. Your email address is not shown on the site. <strong>Reply by email</strong> opens your own email program with the sender's address filled in.</p>
+    <div class="msgs" id="msgs"></div>
+  </section>
+</div>
 <div class="wrap main">
   <section class="panel" aria-labelledby="h-add">
     <h2 id="h-add">Add from KoolTeez</h2>
@@ -245,6 +265,33 @@ a.btn{text-decoration:none;color:inherit;display:inline-block}
     clearTimeout(tTimer); tTimer = setTimeout(function(){ $('toast').hidden = true; undoFn = null; }, 5000);
   }
   $('toast-undo').onclick = function(){ if (undoFn) undoFn(); $('toast').hidden = true; };
+
+  // ---------- messages from the contact form ----------
+  var msgs = [], TYPE = { customer:'Customer', licensing:'Licensing', wholesale:'Wholesale or stockist', press:'Press or other' };
+  function renderMsgs(){
+    var f = $('msg-filter').value, n = msgs.filter(function(m){ return !m.read; }).length;
+    $('msg-new').hidden = !n; $('msg-new').textContent = n + ' new';
+    var list = msgs.filter(function(m){ return !f || (f==='unread' ? !m.read : m.type===f); });
+    $('msgs').innerHTML = list.length ? list.map(function(m){
+      var subj = encodeURIComponent('Re: your DAWG GAMMIT enquiry'), when = new Date(m.at);
+      return '<div class="msg'+(m.read?'':' unread')+'"><div class="msg-h"><span class="chip '+(m.type==='customer'?'live':m.type==='licensing'?'dup':'new')+'">'+esc(TYPE[m.type]||m.type)+'</span><b>'+esc(m.name)+'</b>'+
+        (m.read?'':'<span class="chip bad">New</span>')+'<span class="when">'+esc(when.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})+', '+when.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}))+'</span></div>'+
+        '<div class="msg-meta">'+esc(m.email)+(m.company?' · Company: '+esc(m.company):'')+(m.order?' · Order: '+esc(m.order):'')+'</div>'+
+        '<p class="msg-t">'+esc(m.message)+'</p>'+
+        '<div class="row"><a class="btn btn-main" href="mailto:'+encodeURIComponent(m.email).replace(/%40/g,'@')+'?subject='+subj+'">Reply by email</a>'+
+        '<button class="btn" type="button" data-id="'+m.id+'" data-a="'+(m.read?'unread':'read')+'">'+(m.read?'Mark as not read':'Mark as read')+'</button>'+
+        '<button class="btn" type="button" data-id="'+m.id+'" data-a="delete">Delete</button></div></div>'; }).join('')
+      : '<div class="empty">'+(msgs.length?'No messages match that filter.':'No messages yet. Enquiries from the Contact page on the site will appear here.')+'</div>';
+  }
+  function loadMsgs(){ api('GET','/admin/api/messages').then(function(d){ msgs = d.messages || []; renderMsgs(); }).catch(function(){}); }
+  $('msg-filter').onchange = renderMsgs;
+  $('msgs').addEventListener('click', function(e){ var b = e.target.closest('button[data-id]'); if (!b) return;
+    var m = msgs.filter(function(x){ return x.id===b.dataset.id; })[0]; if (!m) return;
+    if (b.dataset.a==='delete' && !confirm('Delete the message from ' + m.name + '? This cannot be undone.')) return;
+    api('POST','/admin/api/messages',{ id:m.id, action:b.dataset.a }).then(function(){
+      if (b.dataset.a==='delete') { msgs.splice(msgs.indexOf(m),1); toast('Message deleted.'); } else m.read = b.dataset.a==='read';
+      renderMsgs(); }).catch(function(x){ toast(x.message); }); });
+  loadMsgs(); setInterval(loadMsgs, 60000);
 
   // ---------- fetch from KoolTeez (done by the server) ----------
   var review = [];

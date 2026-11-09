@@ -220,6 +220,29 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .social a{transition:background .15s ease,color .15s ease,transform .2s ease}
 .social a:hover{transform:translateY(-3px) rotate(-6deg)}
 
+/* contact form */
+.cf{display:flex;flex-direction:column;gap:16px;width:100%;margin-top:8px;padding:24px;border:1.5px solid rgba(226,183,122,.4);border-radius:6px;background:var(--leather);position:relative}
+.cf::before{content:"";position:absolute;inset:8px;border:1.5px dashed rgba(241,223,186,.28);border-radius:3px;pointer-events:none}
+.cf>*{position:relative}
+.cf-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cf-f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.cf label{font-family:var(--label);font-weight:500;font-size:.95rem;letter-spacing:.04em;color:var(--parch)}
+.cf label span{font-family:var(--body);font-size:.82rem;letter-spacing:0;color:var(--sand)}
+.cf input,.cf select,.cf textarea{font:inherit;font-size:1rem;color:var(--parch);background:var(--night);border:1.5px solid rgba(226,183,122,.45);border-radius:4px;padding:.75em .85em;width:100%;transition:border-color .2s ease,box-shadow .2s ease}
+.cf textarea{resize:vertical;min-height:140px}
+.cf input:focus,.cf select:focus,.cf textarea:focus{outline:none;border-color:#ffe2ad;box-shadow:0 0 0 3px rgba(243,210,156,.25)}
+.cf .bad{border-color:#ff9d85}
+.cf-hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+.cf-err{margin:0;color:#ffb4a2;font-weight:500}
+.cf-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cf button.btn{border:0;cursor:pointer}
+.cf button[disabled]{opacity:.6;cursor:default}
+.info .cf .btn{margin-top:0}
+.cf-small{margin:0;font-size:.85rem!important;color:var(--sand)!important}
+.cf-done{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:24px;border:1.5px solid var(--tan);border-radius:6px;background:var(--leather);animation:pop .45s ease both}
+.cf-done h3{font-family:var(--display);font-weight:400;font-size:1.6rem;color:var(--tan)}
+@media (max-width:620px){.cf-2{grid-template-columns:1fr}.cf{padding:18px}}
+
 @media (hover:none){.look{transform:none}}
 @media (max-width:520px){.look::before{inset:6px}.ticker span,.ticker b{font-size:.9rem}}
 @media (prefers-reduced-motion:reduce){.rv{opacity:1;translate:none}.sec-head h2::after{transform:scaleX(1)}.dust{display:none}.ticker-track{animation:none!important}}
@@ -291,9 +314,10 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
 </main>
 <div class="info" id="v-privacy" hidden><div class="wrap">
   <span class="kicker">DAWG GAMMIT™</span><h2>Privacy</h2>
-  <p>This website is a showcase for DAWG GAMMIT™ designs. It does not ask for your name, email address or payment details.</p>
+  <p>This website is a showcase for DAWG GAMMIT™ designs. It does not take payment details, and you can browse it without giving any information.</p>
+  <p>If you send us a message through the Contact form, we keep what you typed (your name, email address, company name if given, and message) so that we can reply. We do not use it for marketing or pass it to anyone else, and we delete it on request.</p>
   <p>When you tap Buy now you leave this site and complete your order on our secure checkout store. That store collects only the details needed to take payment and deliver your order, and its own privacy policy is shown at checkout.</p>
-  <p>The only thing this site keeps is your last product filter, stored in your own browser so the page opens the way you left it.</p>
+  <p>The only thing this site keeps in your browser is your last product filter, stored in your own browser so the page opens the way you left it.</p>
   <a class="btn btn-line" href="#top">Back to the shop</a>
 </div></div>
 <div class="info" id="v-copyright" hidden><div class="wrap">
@@ -304,10 +328,36 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
   <a class="btn btn-line" href="#top">Back to the shop</a>
 </div></div>
 <div class="info" id="v-contact" hidden><div class="wrap">
-  <span class="kicker">DAWG GAMMIT™</span><h2>Contact</h2>
-  <p>Questions about an order, sizing or a design? Get in touch.</p>
-  <p class="contact-line">Email: <span class="pending"><span class="sel">dawggammit@koolteez.com</span></span></p>
-  <a class="btn btn-line" href="#top">Back to the shop</a>
+  <h2>Contact</h2>
+  <p id="cf-intro">Customers, companies and licensing enquiries are all welcome. Fill this in and we will reply by email.</p>
+  <form class="cf" id="cf" novalidate>
+    <div class="cf-f"><label for="cf-type">What is your enquiry about?</label>
+      <select id="cf-type" name="type" required>
+        <option value="">Choose one</option>
+        <option value="customer">I'm a customer: an order, sizing or a design</option>
+        <option value="licensing">Licensing DAWG GAMMIT designs or characters</option>
+        <option value="wholesale">Wholesale, or stocking DAWG GAMMIT in my shop</option>
+        <option value="press">Press, or something else</option>
+      </select></div>
+    <div class="cf-2">
+      <div class="cf-f"><label for="cf-name">Your name</label><input id="cf-name" name="name" type="text" autocomplete="name" maxlength="100" required></div>
+      <div class="cf-f"><label for="cf-email">Email address</label><input id="cf-email" name="email" type="email" autocomplete="email" maxlength="160" required></div>
+    </div>
+    <div class="cf-2">
+      <div class="cf-f"><label for="cf-company">Company name <span id="cf-co-note">(leave blank if you are a customer)</span></label><input id="cf-company" name="company" type="text" autocomplete="organization" maxlength="120"></div>
+      <div class="cf-f" id="cf-order-f"><label for="cf-order">Order number <span>(if you have one)</span></label><input id="cf-order" name="order" type="text" maxlength="60"></div>
+    </div>
+    <div class="cf-f"><label for="cf-msg">Your message</label><textarea id="cf-msg" name="message" rows="6" maxlength="3000" required></textarea></div>
+    <div class="cf-hp" aria-hidden="true"><label for="cf-web">Leave this empty</label><input id="cf-web" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <p class="cf-err" id="cf-err" role="alert" hidden></p>
+    <div class="cf-row"><button class="btn btn-gold" type="submit" id="cf-send">Send message</button><a class="btn btn-line" href="#top">Back to the shop</a></div>
+    <p class="cf-small">We use these details only to reply to you. See <a href="#privacy">Privacy</a>.</p>
+  </form>
+  <div class="cf-done" id="cf-done" role="status" tabindex="-1" hidden>
+    <h3>Message sent</h3>
+    <p>Thanks. We have your message and will reply to the email address you gave.</p>
+    <a class="btn btn-line" href="#top">Back to the shop</a>
+  </div>
 </div></div>
 
 <footer class="foot"><div class="wrap">
@@ -361,6 +411,35 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
   }
   fit(); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit);
   window.addEventListener('resize',fit);
+
+  // ----- contact form -----
+  var cf=document.getElementById('cf');
+  if(cf){ var opened=Date.now(), g=function(id){return document.getElementById(id)};
+    var showFor=function(){ var t=g('cf-type').value, biz=t==='licensing'||t==='wholesale';
+      g('cf-order-f').hidden = t!=='customer'&&t!=='';
+      g('cf-co-note').textContent = biz ? '' : t==='press' ? '(or publication, if any)' : '(leave blank if you are a customer)';
+      g('cf-company').required = biz; };
+    g('cf-type').addEventListener('change',showFor); showFor();
+    window.addEventListener('hashchange',function(){ if(location.hash==='#contact') opened=Date.now(); });
+    cf.addEventListener('submit',function(e){ e.preventDefault();
+      var err=g('cf-err'), bad=null, t=g('cf-type').value, biz=t==='licensing'||t==='wholesale';
+      [].forEach.call(cf.querySelectorAll('.bad'),function(x){x.classList.remove('bad')});
+      var fail=function(id,msg){ if(!bad){ bad=g(id); err.textContent=msg; } g(id).classList.add('bad'); };
+      if(!t) fail('cf-type','Choose what your enquiry is about.');
+      if(g('cf-name').value.trim().length<2) fail('cf-name','Enter your name.');
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g('cf-email').value.trim())) fail('cf-email','Enter a valid email address so we can reply.');
+      if(biz&&g('cf-company').value.trim().length<2) fail('cf-company','Enter your company name.');
+      if(g('cf-msg').value.trim().length<10) fail('cf-msg','Write a few words about your enquiry.');
+      if(bad){ err.hidden=false; bad.focus(); return; }
+      err.hidden=true; var btn=g('cf-send'); btn.disabled=true; btn.textContent='Sending…';
+      fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:t,name:g('cf-name').value,email:g('cf-email').value,company:g('cf-company').value,order:g('cf-order-f').hidden?'':g('cf-order').value,message:g('cf-msg').value,website:g('cf-web').value,t:Date.now()-opened})})
+        .then(function(r){ return r.json().catch(function(){return {}}).then(function(d){ if(!r.ok) throw new Error(d.error||'That did not send. Please try again.'); }); })
+        .then(function(){ cf.hidden=true; g('cf-intro').hidden=true; g('cf-done').hidden=false; g('cf-done').focus(); cf.reset(); showFor(); })
+        .catch(function(x){ err.textContent=(x&&x.message&&!/fetch/i.test(x.message))?x.message:'That did not send. Check your connection and try again.'; err.hidden=false; })
+        .then(function(){ btn.disabled=false; btn.textContent='Send message'; });
+    });
+    window.addEventListener('hashchange',function(){ if(location.hash!=='#contact'&&!g('cf-done').hidden){ g('cf-done').hidden=true; cf.hidden=false; g('cf-intro').hidden=false; } });
+  }
 
   // ----- motion -----
   var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;

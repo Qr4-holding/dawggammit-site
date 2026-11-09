@@ -16,6 +16,7 @@ const SECRET = process.env.SESSION_SECRET || crypto.createHash('sha256').update(
 const UPLOADS = path.join(DATA, 'uploads');
 const STORE = path.join(DATA, 'store.json');
 const APP = __dirname;
+const MSGS = path.join(DATA, 'messages.json');
 fs.mkdirSync(UPLOADS, { recursive: true });
 
 // ---------- data: a draft the admin edits, and the published version visitors see ----------
@@ -167,6 +168,23 @@ function cleanState(s) {
   };
 }
 
+// ---------- enquiries from the contact form (kept on the server, read in the admin) ----------
+const TYPES = { customer: 'Customer', licensing: 'Licensing', wholesale: 'Wholesale or stockist', press: 'Press or other' };
+let msgs = []; try { msgs = JSON.parse(fs.readFileSync(MSGS, 'utf8')); } catch (e) {}
+function writeMsgs() { const tmp = MSGS + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(msgs)); fs.renameSync(tmp, MSGS); }
+const sent = new Map();   // ip -> times of recent messages
+function cleanMsg(b) {
+  const one = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, n);
+  const m = { type: TYPES[b.type] ? b.type : '', name: one(b.name, 100), email: one(b.email, 160), company: one(b.company, 120), order: one(b.order, 60),
+    message: String(b.message == null ? '' : b.message).replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, '').trim().slice(0, 3000) };
+  if (!m.type) throw new Error('Choose what your enquiry is about.');
+  if (m.name.length < 2) throw new Error('Enter your name.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m.email)) throw new Error('Enter a valid email address so we can reply.');
+  if ((m.type === 'licensing' || m.type === 'wholesale') && m.company.length < 2) throw new Error('Enter your company name.');
+  if (m.message.length < 10) throw new Error('Write a few words about your enquiry.');
+  return m;
+}
+
 // ---------- pages ----------
 const LOGIN = fs.readFileSync(path.join(APP, 'login.html'), 'utf8');
 const ADMIN = fs.readFileSync(path.join(APP, 'admin.html'), 'utf8');
@@ -189,6 +207,22 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, fs.readFileSync(path.join(UPLOADS, f)), 'image/jpeg', { 'Cache-Control': 'public, max-age=31536000, immutable' });
     }
     if (p === '/healthz') return send(res, 200, 'ok', 'text/plain');
+    if (p === '/api/contact' && req.method === 'POST') {
+      try {
+        if (!/application\/json/.test(req.headers['content-type'] || '')) return json(res, 415, { error: 'Expected JSON' });
+        const o = req.headers.origin; if (o && new URL(o).host !== req.headers.host) return json(res, 403, { error: 'Send the form from this site.' });
+        const b = JSON.parse(await readBody(req, 2e4));
+        if (b.website || !(+b.t >= 2500)) return json(res, 200, { ok: true });          // hidden field filled, or sent faster than a person can type: a robot. Say thanks, keep nothing.
+        const m = cleanMsg(b);
+        const ip = clientIp(req), now = Date.now(), mine = (sent.get(ip) || []).filter(x => now - x < 3600e3);
+        if (mine.length >= 5 || msgs.filter(x => now - Date.parse(x.at) < 86400e3).length >= 300) return json(res, 429, { error: 'Too many messages just now. Please try again later.' });
+        mine.push(now); sent.set(ip, mine);
+        msgs.unshift({ id: crypto.randomBytes(8).toString('hex'), at: new Date().toISOString(), read: false, ...m });
+        if (msgs.length > 1000) msgs.length = 1000;
+        writeMsgs();
+        return json(res, 200, { ok: true });
+      } catch (e) { return json(res, 400, { error: /^(Choose|Enter|Write)/.test(e.message) ? e.message : 'That did not send. Check the form and try again.' }); }
+    }
 
     // ----- admin -----
     if (p === '/admin/login' && req.method === 'GET') return send(res, 200, LOGIN.replace('{{MSG}}', PASSWORD ? '' : 'Sign-in is switched off: no admin password is set on the server.'), undefined, { 'Cache-Control': 'no-store' });
@@ -226,6 +260,13 @@ const server = http.createServer(async (req, res) => {
       if (p === '/admin/api/upload' && req.method === 'POST') {
         const body = JSON.parse(await readBody(req));
         return json(res, 200, { src: await saveUpload(body.dataUrl) });
+      }
+      if (p === '/admin/api/messages' && req.method === 'GET') return json(res, 200, { messages: msgs, types: TYPES });
+      if (p === '/admin/api/messages' && req.method === 'POST') {
+        const b = JSON.parse(await readBody(req, 1e4)); const i = msgs.findIndex(m => m.id === b.id);
+        if (i < 0) return json(res, 404, { error: 'That message is no longer there.' });
+        if (b.action === 'delete') msgs.splice(i, 1); else msgs[i].read = b.action === 'read';
+        writeMsgs(); return json(res, 200, { ok: true });
       }
       return json(res, 404, { error: 'Not found' });
     }
