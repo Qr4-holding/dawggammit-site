@@ -50,6 +50,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .nav a{text-decoration:none}
 .nav a:hover{color:var(--tan)}
 .nav .btn{padding:.65em 1.1em;font-size:.78rem}
+@media (max-width:1100px){.nav .hide-md{display:none}}
 @media (max-width:760px){.nav .hide-sm{display:none}.brand b{font-size:1.25rem}.nav{gap:14px}}
 
 /* hero */
@@ -79,8 +80,8 @@ h1,h2,h3{text-wrap:balance;margin:0}
 
 /* lookbook */
 .looks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.look{position:relative;display:block;overflow:hidden;border-radius:4px;aspect-ratio:2/3;max-width:100%;background:var(--leather);text-decoration:none}
-.look img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease}
+.look{position:relative;display:block;overflow:hidden;border-radius:4px;aspect-ratio:9/16;max-width:100%;background:var(--leather);text-decoration:none}
+.look img{width:100%;height:100%;object-fit:cover;object-position:50% 0%;display:block;transition:transform .6s ease}
 .look:hover img{transform:scale(1.04)}
 .look-cap{position:absolute;inset:auto 0 0 0;display:flex;flex-direction:column;gap:6px;padding:48px 16px 16px;background:linear-gradient(0deg,rgba(21,12,6,.95) 0%,rgba(21,12,6,0) 100%)}
 .look-name{font-family:var(--display);font-size:1.25rem;line-height:1.15;color:var(--parch)}
@@ -90,6 +91,11 @@ h1,h2,h3{text-wrap:balance;margin:0}
 /* shop */
 .tabs{display:flex;flex-wrap:wrap;gap:8px}
 .tab{font-family:var(--label);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:.8rem;padding:.7em 1.1em;border-radius:3px;border:1.5px solid var(--tan);background:transparent;color:var(--parch);cursor:pointer}
+#shop,#looks{scroll-margin-top:84px}
+.filters{display:flex;flex-direction:column;gap:10px;margin:-8px 0 24px}
+.frow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.flab{font-family:var(--label);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sand);min-width:84px}
+.none{color:var(--sand);margin:0 0 20px}
 .tab[aria-pressed="true"]{background:var(--gold);color:var(--leather);border-color:transparent}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
 .card{display:flex;flex-direction:column;background:var(--leather);border-radius:4px;overflow:hidden;border:1px solid rgba(226,183,122,.25)}
@@ -138,6 +144,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
   <a class="brand" href="#top"><b class="fit-src">DAWG GAMMIT<span class="tm">™</span></b><small class="fit">K9's Bark It All The Time</small></a>
   <nav class="nav" aria-label="Main">
     <a class="hide-sm" href="#looks">Lookbook</a>
+    <a class="hide-md" href="#hoodies">Hoodies</a><a class="hide-md" href="#t-shirt-dresses">T-shirt Dresses</a><a class="hide-md" href="#tees-tops">Tees &amp; Tops</a><a class="hide-md" href="#hats">Hats</a>
     <a href="#shop">Shop</a>
     <a class="btn btn-gold" href="https://koolteez.com/collections/outlaw" target="_blank" rel="noopener">Buy now ↗</a>
   </nav>
@@ -192,14 +199,18 @@ h1,h2,h3{text-wrap:balance;margin:0}
 <section class="sec" id="shop" style="padding-top:0"><div class="wrap">
   <div class="sec-head">
     <h2>The whole posse</h2>
-    <div class="tabs" role="group" aria-label="Filter by collection">
-      <button class="tab" id="f-all" data-f="all" aria-pressed="true">All 22</button>
-      <button class="tab" id="f-outlaw" data-f="outlaw" aria-pressed="false">Outlaw 16</button>
-      <button class="tab" id="f-wanted" data-f="wanted" aria-pressed="false">Wanted 6</button>
-    </div>
   </div>
+  <div class="filters">
+    <div class="frow"><span class="flab">Collection</span><div class="tabs" role="group" aria-label="Filter by collection">
+      <button class="tab" data-g="col" data-v="all" aria-pressed="true">All 22</button>
+      <button class="tab" data-g="col" data-v="outlaw" aria-pressed="false">Outlaw 16</button>
+      <button class="tab" data-g="col" data-v="wanted" aria-pressed="false">Wanted 6</button>
+    </div></div>
+    <div class="frow"><span class="flab">Product</span><div class="tabs" role="group" aria-label="Filter by product"><button class="tab" data-g="line" data-v="all" aria-pressed="true">All</button><button class="tab" data-g="line" data-v="hoodies" aria-pressed="false">Hoodies 10</button><button class="tab" data-g="line" data-v="t-shirt-dresses" aria-pressed="false">T-shirt Dresses 8</button><button class="tab" data-g="line" data-v="tees-tops" aria-pressed="false">Tees &amp; Tops 3</button><button class="tab" data-g="line" data-v="hats" aria-pressed="false">Hats 1</button></div></div>
+  </div>
+  <p class="none" id="none" hidden>Nothing in that mix yet. Try another collection or product.</p>
   <div class="grid">
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-brown-poodle-hoodie" target="_blank" rel="noopener" aria-label="Buy the Brown Poodle Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/KUGx-yTCA_Bk_xhC_z9aWO_E2CfuVHIVPbdz0r5im0I/w:1920/sm:1/enc/y2PXV3eqxNWoVKkS/uz8fyv52KF7DxD0v/LEzHolMhlAnnr4yT/YenjanO5n8iHQBAb/qHYYZ4rAaU7cjsaD/csSrRhHYAj-jDkxc/yq0ACa23iFPrZb17/I4pePhZcHctzNhAa/xqRxRkeqo_zYrB4m/kKFl2K-WWhtma_e_/bQbCq8-OlxG6LH_E/-tkvTkVVKXXCY-kZ/ThLpJn-mudJuUOLr/PM9sxXc3-gI0L8XN/wj5jj9SfvGY.jpg" alt="Brown Poodle Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/ppQ22ZSem9p9HsyJR08rZIH8kdZHjMbBYb4yN8LARYI/w:1200/sm:1/enc/lSslWs-FWsipuwj6/_f1n1WeaKC_Kqkcf/-ji1dNe0SQ5989Wh/xhMJashVQ7SZ7Fu3/7-41_5b4h4qmwgUi/tjx6_ljA45tlvkv7/01EHEKy7noV5wst1/B0NSpQN7_f-HuGHg/O3QdNBT4oc9cGCoM/Z48Q6tdsINitfHoK/QPy1kxk5neCjppOj/LuRq9nIDz6dyqhK3/abKOoufoqTG5E-8I/n9SE_A.png" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -207,7 +218,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-brown-poodle-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-cane-corso-brown-hoodie" target="_blank" rel="noopener" aria-label="Buy the Cane Corso Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/6oZ9-ux5pHoIMtx58oeZM7VDnFC3OHkWHGV1Lj2CSdU/w:1200/sm:1/enc/mBOPwWBYhWGprekv/fwnwC6zq_ivmhGKz/mUnVrzyyiXzZPotJ/FPZvV3FoVICgGnZu/hmvxNddyPlRBu6su/7evOqwcDSNWkYkJd/C1XdiWE_lMcRUN9V/GYkAW1OT6Eg3nW8Y/-PxlwsVLzSMZu89-/kI88mRmd558sA7rj/jqlBuYMmPbw_7mDT/E1Zh7DRlHWcgP6X2/UiNdI0PLer1CjCge/X4py9Y81XdrcPT1X/se1ijE-LsXw.png" alt="Cane Corso Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/4OHNe9jAZYQnmnyGtbR94w0lOGwdXhipXDYIZxgyucE/w:1920/sm:1/enc/mBOPwWBYhWGprekv/fwnwC6zq_ivmhGKz/mUnVrzyyiXzZPotJ/FPZvV3FoVICgGnZu/hmvxNddyPlRBu6su/7evOqwcDSNWkYkJd/C1XdiWE_lMcRUN9V/GYkAW1OT6Eg3nW8Y/-PxlwsVLzSMZu89-/kI88mRmd558sA7rj/jqlBuYMmPbw_7mDT/E1Zh7DRlHWcgP6X2/UiNdI0PLer1CjCge/X4py9Y81XdrcPT1X/se1ijE-LsXw.jpg" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -215,7 +226,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-cane-corso-brown-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-chihuahua-brown-hoodie" target="_blank" rel="noopener" aria-label="Buy the Chihuahua Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/dJ3Mx23lneIDweLgP3LuypBHVbsgEy1sleXrneWKN0w/w:1920/sm:1/enc/tIBIzDAYJPLLFIak/D17vvSq7MSfyWE1n/FH0Wbb7I4TufRI8C/F4NUOM5J-uRxPtYi/vbTKxwt8YtYE4Xm1/EiAe_wEv9bPHIXKX/q3fQydq9WRuGKkc3/076Amcrw-aiSyVUq/bNflyT9F6jFqz4c9/mu2HhMBPewLa6dFr/8TkYoMhAIvdPrH-I/r9rd0vqZBfRQ9b8s/RowVkH7s-MmuMqW1/sWPmgQA1zGywsdww/nsfOR0ooHNQ.jpg" alt="Chihuahua Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/Cl461wla9C-BOJ2qn2piYN9hnKbwbWVb551uzyqyBJg/w:1200/sm:1/enc/GKNxyjNboM13v56f/6Eo4gAA8YGNs7N43/n9O2DIAa23_8sMdq/O9O5vHbhZOQ1J9Ef/OcXkJiixCw5dYa1-/T7M4JbR-7QrmAoon/NbRyy7-3JI_AlhNs/gBIWlj9rsAH3G40i/d2nDtXCaH36bPCfF/NYoN2WMBmlKJasS-/4iWjFN0kWwtYsEgb/ENiVCywMLLEmoAh4/GoXLdpnkSzTwu7iK/S0u_Kg.png" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -223,7 +234,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-chihuahua-brown-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-doberman-brown-hoodie" target="_blank" rel="noopener" aria-label="Buy the Doberman Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/v5KnOV4Cr7O2-nhUD6BsNul22iH4vweGdV-Se1RkLdI/w:1920/sm:1/enc/0jUrksNdOnLeYOv6/DgbtJt4ijM0NsYs-/C44v5QgBi0WzbwwT/yV4O4itSO2T6UbRo/zSVPJzuL47jgd1ea/-9GCT50tKE3MZiUz/RRlGZCZdsN063ram/6Z3CF7nAT9jfs6mJ/uztkOU9gJekz1Geu/2jCrkCBA51uzT7Hd/_yfje90cpnSeTjcK/qoLOZA_CHctENAdd/8ipvi8_sbs1WmQ63/gW6iWa36_0o29YXk/zrgI53w4DtU.jpg" alt="Doberman Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/74Obojt4U4bk2f7FI9CHG_ST3HHbbCahw-dyjsMQD0U/w:1200/sm:1/enc/-JUyhSNATy9zidx1/puUvq2It038H2FIR/2HZLJqzqplfu7eJI/C9dO2y8mg4dX3luE/Qhsa2a9NKykAKK7i/lDhVPn7FeggV3VlY/QpGJG_mSNl9hY8Lt/EysU7NNXJ4Lsa1Xy/ub0-CENsKT4xYHHW/vDFwLm8XbRTf4GsL/kcYouS4yuTnjbWlB/-eqsGwwMU-LrObEw/Pc4hVTAAL0ZRpgk0/f5ASTQ.png" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -231,7 +242,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-doberman-brown-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-french-bulldawg-brown-hoodie" target="_blank" rel="noopener" aria-label="Buy the French Bulldawg Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/R7R082Ryal8Moouiz5E2NCF1SH8k0aLlkYtLT12ENjY/w:1200/sm:1/enc/MeNwcpZYeADM3IiD/TcZBXzzJPDZkdrZ9/Rh1tVRWhqbWKkK0v/i_VcjZKjiQJpVe_n/-95WUb7IZE245FpG/OHE11UPz1ZnrdZLS/SyX7kL5_LBP3dOIz/AZ9xNMQRGheFBXcJ/P1do-dMVtd4dXudv/iOklApQ1vn2M4gTz/y9JAtttGnZrHytKU/zdtlVyEvWE-MgIsV/IrgwETpUzS9WPPwS/huT9u2qH-CDUB1Ta/v0NqPxoFHXI.png" alt="French Bulldawg Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/51hVipSBAEkdNTXJ5HxVjdrDh6vYTPO20YiPQ9xu9mE/w:1920/sm:1/enc/MeNwcpZYeADM3IiD/TcZBXzzJPDZkdrZ9/Rh1tVRWhqbWKkK0v/i_VcjZKjiQJpVe_n/-95WUb7IZE245FpG/OHE11UPz1ZnrdZLS/SyX7kL5_LBP3dOIz/AZ9xNMQRGheFBXcJ/P1do-dMVtd4dXudv/iOklApQ1vn2M4gTz/y9JAtttGnZrHytKU/zdtlVyEvWE-MgIsV/IrgwETpUzS9WPPwS/huT9u2qH-CDUB1Ta/v0NqPxoFHXI.jpg" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -239,7 +250,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-french-bulldawg-brown-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-golden-retriever-brown-hoodie" target="_blank" rel="noopener" aria-label="Buy the Golden Retriever Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/su5huh8kjt8WQJ8sdgY9V8iDDW8Uc_j5p2sJetW9vU4/w:1920/sm:1/enc/tyxslMSwGBe7ouYA/hjcpeiWmBQTdwL4g/UEfe8_LeTb477126/ZZZPrQyIWwYPJprh/2LP8BzflyEphsjbJ/PBzmcXQmBgwWV4Oa/AffGI6qsHAVASa4I/h-9p40p1KWax1Ver/b-KeZPidvyFejbbO/flwIYIpIoSJ4-Wlg/_X0HMW7bN-TM99ze/_VFZzjBhXP8U_ph3/nEPpM908L5rxSM1c/xTuEysCxcbwWEXoX/neMVePhOMsw.jpg" alt="Golden Retriever Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/8WuWpaPPfPHDNqvKe_3pBdCNnz5mqd5UvJ_7zHej_kU/w:1200/sm:1/enc/QO3IfuoAVhDxVyOT/lL5h4BSNHiUkJlVv/qzQ9OpN7hVudsZgP/Z751BmlYKkkfAUgL/jpoO3V4gNoe_6qaS/kRUIT-ZMyUmE471O/ySeVSlUvW2NXo-Kl/7MXxKtRmy41Ceu8f/fB5sHEGFBqxp2gh_/_79_BAVo9JNzNLBQ/UbqKqa-WN6yfD-b2/2_cH2EJ4UzIHajnm/wnd-UAVMkl-Ttjrx/efHgqQ.png" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -247,7 +258,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-golden-retriever-brown-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-poodle-brown-hoodie" target="_blank" rel="noopener" aria-label="Buy the Poodle Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/NYcegwbKn4723op1KZst94ZN_5JSu951VXUXYRYrxU8/w:1200/sm:1/enc/RuR3nG0lM_VTnaBq/OVDoejNfN_LWmglj/NhGs2ujZ7bHDU57W/qR65Fg4az3-WO_31/xNLZLage9vNN3EmS/uHJK17NAmD6Ja81Y/iIjipiU1SQMfPJXe/aYZIX0G1D8Sz1yUA/4lFh8ZpFu3mxtyOv/LEJEM9F2_GFSXbZ4/xn6ztDFY1Vn4AZ-h/BkUq_eQn7JrY2G8U/xFWeZ8Qrb564mB2x/WicTrVpMLpICxmX7/LGSEB4zig-M.png" alt="Poodle Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/HQ29oYcEFlmNjFJly6sot9bZ1JLbYf02CQK4kYUXaPY/w:1920/sm:1/enc/RuR3nG0lM_VTnaBq/OVDoejNfN_LWmglj/NhGs2ujZ7bHDU57W/qR65Fg4az3-WO_31/xNLZLage9vNN3EmS/uHJK17NAmD6Ja81Y/iIjipiU1SQMfPJXe/aYZIX0G1D8Sz1yUA/4lFh8ZpFu3mxtyOv/LEJEM9F2_GFSXbZ4/xn6ztDFY1Vn4AZ-h/BkUq_eQn7JrY2G8U/xFWeZ8Qrb564mB2x/WicTrVpMLpICxmX7/LGSEB4zig-M.jpg" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -255,7 +266,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-poodle-brown-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-shih-tzu-brown-hoodie" target="_blank" rel="noopener" aria-label="Buy the Shih Tzu Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/TjIuJOKsA93uUjaWLbvVcAvpHPaYQNz0trmPtYOhCOc/w:1200/sm:1/enc/t01PyZGHTmPymMV9/kEWUbTRAXjV-yyjY/ZQkFRg3SJlp3E2ES/HmNpDC92L8fhT4mu/qqtNLvbuAKtslTxu/nowtIsZExU9b6q_M/IqyKJ5U9N5LBCF9g/DU7ea1MZ5CYMyeeH/dzEyrLknL5y4jJkp/pnvVf4Ql_UBzxmUJ/EZrq269N2ZWoyWH9/qmsCNAJH7cJ_ztnZ/onOISuObZ60Qc0LP/2ml7XkycUlsV6u_K/xcg8WzA4r_Y.png" alt="Shih Tzu Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/hxhShCbk0Kk9--v2NCGHR6DJ21YeiiKJzaQCaU10lL8/w:1920/sm:1/enc/t01PyZGHTmPymMV9/kEWUbTRAXjV-yyjY/ZQkFRg3SJlp3E2ES/HmNpDC92L8fhT4mu/qqtNLvbuAKtslTxu/nowtIsZExU9b6q_M/IqyKJ5U9N5LBCF9g/DU7ea1MZ5CYMyeeH/dzEyrLknL5y4jJkp/pnvVf4Ql_UBzxmUJ/EZrq269N2ZWoyWH9/qmsCNAJH7cJ_ztnZ/onOISuObZ60Qc0LP/2ml7XkycUlsV6u_K/xcg8WzA4r_Y.jpg" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -263,7 +274,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-shih-tzu-brown-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-white-poodle-brown-hoodie" target="_blank" rel="noopener" aria-label="Buy the White Poodle Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/DuR26Vo0O344vKJGJu4Tiv3RMbKLd6Xi6upnktd1dvQ/w:1200/sm:1/enc/vwc6Jek-Oo22u7d8/VYrqsxpYEwsiE5Hu/EZQeZ9zBVUXcC-D1/ZGG2UTqP2wLj3qzt/hyASv6eCLMogAWKb/RqY1KMJZ1YFp6Fea/pEZEYFTSM_x-GZJC/W_7HO1oKUWaihgtU/4XnpWoC7DuQi4Yxt/Qw_K4RFcwczs-7qB/ljzMrhl1AxsIzEob/eZfqQvplERzr7xxH/zHKAH-dkJ4sAxAbN/3veRHIpL5VnrlrnM/FJht54BSZvo.png" alt="White Poodle Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/DqYLN1R8Dn7sYftCMfCGZj5xUoomkRM2nvw-mjxnF6c/w:1920/sm:1/enc/vwc6Jek-Oo22u7d8/VYrqsxpYEwsiE5Hu/EZQeZ9zBVUXcC-D1/ZGG2UTqP2wLj3qzt/hyASv6eCLMogAWKb/RqY1KMJZ1YFp6Fea/pEZEYFTSM_x-GZJC/W_7HO1oKUWaihgtU/4XnpWoC7DuQi4Yxt/Qw_K4RFcwczs-7qB/ljzMrhl1AxsIzEob/eZfqQvplERzr7xxH/zHKAH-dkJ4sAxAbN/3veRHIpL5VnrlrnM/FJht54BSZvo.jpg" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -271,7 +282,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-white-poodle-brown-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="hoodies">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-yorkshire-terrier-brown-hoodie" target="_blank" rel="noopener" aria-label="Buy the Yorkshire Terrier Outlaw Hoodie">
     <img class="main" src="https://imgproxy.fourthwall.dev/RkcF36lns2O4wiil2abBi48ymMQ7RyUC3MGnER9Cgks/w:1200/sm:1/enc/wjer8fWBYSy1BRUD/3MxWIwT8qvWKCnej/VESvEf0UOK1LOUbc/LpYXqHqJjh0RrXdw/rC4nhCk1XkGUGDWf/3el99Rp3h7eerLWn/PQ6NH2jK0dGsY_QX/Sd3mKx5nfb1aG6om/U_AVYDthYOAeK9HH/yjLcmOdweGIWh6yv/gVpFBiM3fKKLwBJX/_6sLSwmd3Sc1YPVg/9Bh3dZAdtRpMRRA5/TkwZSyHCAudal10X/XKq0QV4XhIc.png" alt="Yorkshire Terrier Outlaw Hoodie" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/JK3t9H557bVK_4jHlcjIUp6G3u6MKIB4tzQ1A_pi9DE/w:1920/sm:1/enc/wjer8fWBYSy1BRUD/3MxWIwT8qvWKCnej/VESvEf0UOK1LOUbc/LpYXqHqJjh0RrXdw/rC4nhCk1XkGUGDWf/3el99Rp3h7eerLWn/PQ6NH2jK0dGsY_QX/Sd3mKx5nfb1aG6om/U_AVYDthYOAeK9HH/yjLcmOdweGIWh6yv/gVpFBiM3fKKLwBJX/_6sLSwmd3Sc1YPVg/9Bh3dZAdtRpMRRA5/TkwZSyHCAudal10X/XKq0QV4XhIc.jpg" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -279,7 +290,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$70</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-super-heavyweight-yorkshire-terrier-brown-hoodie" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="t-shirt-dresses">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-brown-poodle-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener" aria-label="Buy the Brown Poodle Outlaw T-shirt Dress">
     <img class="main" src="https://imgproxy.fourthwall.dev/1avemsyUzG7eLpSMzuqG99x_wt1Av8OFVNjSJx0T68k/w:1200/sm:1/enc/AH8vwoRqLdlkDdnH/rPoguNI1Y3NMgPNi/dgqDxBolWCxJip3j/IYTvYPhrXmqnuce0/3E-19mOz-zHwDhho/SxworIQ9LfUPOlTw/RRGMW9NMM6FLgMGZ/TeCbP2syPTWVwfzD/4URoakAgFJLRw3e3/P1m7rnPugiHHqTK-/brJ4NBiWUFzL_4Ce/H2Z1vlx_uupG4Qs_/inXhdXqMVNO1OTDF/vRYAzw.png" alt="Brown Poodle Outlaw T-shirt Dress" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/ocuCD0UlZzDvCSVgGAwg_LzKkd-sPeaa3Xkk8jgbW4g/w:1920/sm:1/enc/AH8vwoRqLdlkDdnH/rPoguNI1Y3NMgPNi/dgqDxBolWCxJip3j/IYTvYPhrXmqnuce0/3E-19mOz-zHwDhho/SxworIQ9LfUPOlTw/RRGMW9NMM6FLgMGZ/TeCbP2syPTWVwfzD/4URoakAgFJLRw3e3/P1m7rnPugiHHqTK-/brJ4NBiWUFzL_4Ce/H2Z1vlx_uupG4Qs_/inXhdXqMVNO1OTDF/vRYAzw.webp" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -287,7 +298,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$40</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-brown-poodle-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="t-shirt-dresses">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-chihuahua-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener" aria-label="Buy the Chihuahua Outlaw T-shirt Dress">
     <img class="main" src="https://imgproxy.fourthwall.dev/-cvD0WUJDvzxvP2eirdGA6AFq-s3wjXRIQNLJFWaev4/w:1200/sm:1/enc/C-Ax-KnSvrBmjCjQ/LSTYE9DAosNPEgTm/8OxLaIYqVIBtny1U/cTZ4a4XLaMxY0-fc/NMhPZfQTHFobCVeB/QDh3d1zN7-DbmncO/M4qaVgfntPq263GN/tWHQO0iJqlzcdKUx/xwVsaqnBRMw33-FP/ZjwQHBnuuGtS4fEz/J3apVdPLYy7BnflB/HPACl3h_Tcjz80zZ/S_IEkqTX8DRy33oE/qYI2tQ.png" alt="Chihuahua Outlaw T-shirt Dress" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/LjvyAzUFNrXchjqsboNxwzHvS658N29o-6LI4M6YCBE/w:1920/sm:1/enc/C-Ax-KnSvrBmjCjQ/LSTYE9DAosNPEgTm/8OxLaIYqVIBtny1U/cTZ4a4XLaMxY0-fc/NMhPZfQTHFobCVeB/QDh3d1zN7-DbmncO/M4qaVgfntPq263GN/tWHQO0iJqlzcdKUx/xwVsaqnBRMw33-FP/ZjwQHBnuuGtS4fEz/J3apVdPLYy7BnflB/HPACl3h_Tcjz80zZ/S_IEkqTX8DRy33oE/qYI2tQ.webp" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -295,7 +306,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$40</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-chihuahua-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="t-shirt-dresses">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-doberman-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener" aria-label="Buy the Doberman Outlaw T-shirt Dress">
     <img class="main" src="https://imgproxy.fourthwall.dev/7o0pEtpLsp9LFMH7YapGcvFnYNB0gnVL7c-7VGeqCvc/w:1200/sm:1/enc/9qrlVonuCUxMVyjp/pE9yWZN1pVsL7IX0/KZ3AmKqFNxuHdpmt/TO9PLuDT_KbqdNyf/U9XAGXFS90unqzI0/4wQ-j1u2bMabjPdh/QHI7wnN4L-iJQJ88/XWP_UVG2mZV1loZS/NQHSNAotCo_VY9YO/ImDnNaPPQQ4OrGxG/CJDGbSamU26TJqUN/YPuZ6AJ1i5zSDthd/wJl0mz3mRkvMN_gu/7lujYA.png" alt="Doberman Outlaw T-shirt Dress" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/ZD06UHqmC6TTAxbGWCbEw1SxT__DA2pztBteN5TO04A/w:1920/sm:1/enc/9qrlVonuCUxMVyjp/pE9yWZN1pVsL7IX0/KZ3AmKqFNxuHdpmt/TO9PLuDT_KbqdNyf/U9XAGXFS90unqzI0/4wQ-j1u2bMabjPdh/QHI7wnN4L-iJQJ88/XWP_UVG2mZV1loZS/NQHSNAotCo_VY9YO/ImDnNaPPQQ4OrGxG/CJDGbSamU26TJqUN/YPuZ6AJ1i5zSDthd/wJl0mz3mRkvMN_gu/7lujYA.webp" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -303,7 +314,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$40</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-doberman-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="t-shirt-dresses">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-golden-retriever-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener" aria-label="Buy the Golden Retriever Outlaw T-shirt Dress">
     <img class="main" src="https://imgproxy.fourthwall.dev/u0QnkG1X3T3kh7Eg91GtV8Cbu6cKRQb0_abBc6TXl-c/w:1200/sm:1/enc/ft9Tew2hKm7NBU22/oFzokAnJK4s6b2Ae/QlvIl335rF1KaQpv/hEPG_eetUHETw0-d/dBm1SEFrtLfKYjLX/LTQaOxgZEwrcu6sW/J0XZYcMGG-1W76zU/7GPnBPtsJZv2ngj9/JN7TCUOYk-Q059ns/VR43_30QeDLfG0qV/q-fdkBuSJO8f2yGF/KJTXqb6ZEdBItkFy/jq3lJVXm_R0XNQIS/jEBr5Q.png" alt="Golden Retriever Outlaw T-shirt Dress" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/KSbhLsp8OnFqqwp4jugezdFKic8byiG6OhWbI_w8YB0/w:1920/sm:1/enc/ft9Tew2hKm7NBU22/oFzokAnJK4s6b2Ae/QlvIl335rF1KaQpv/hEPG_eetUHETw0-d/dBm1SEFrtLfKYjLX/LTQaOxgZEwrcu6sW/J0XZYcMGG-1W76zU/7GPnBPtsJZv2ngj9/JN7TCUOYk-Q059ns/VR43_30QeDLfG0qV/q-fdkBuSJO8f2yGF/KJTXqb6ZEdBItkFy/jq3lJVXm_R0XNQIS/jEBr5Q.webp" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -311,7 +322,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$40</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-golden-retriever-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
+<article class="card" data-col="outlaw" data-line="t-shirt-dresses">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-shih-tzu-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener" aria-label="Buy the Shih Tzu Outlaw T-shirt Dress">
     <img class="main" src="https://imgproxy.fourthwall.dev/RHrcw54WgtGGfMOtpC7DMAoCmIkUA-IyTecQaFG4wRY/w:1920/sm:1/enc/4ens9iNfs31jO9FQ/yDok7k2NgnkTPdH3/EK13h2Xx8LJj8XpL/zCfS_-2BuTOb1que/d8A2x6DX-8AtzPlS/yQSsPGPTFBQMXhAZ/vfLsezhuWMWShny8/0SX5WWg20uBQ4xvs/qsbvBWkGGElvxiZo/6fquJPtrH9Az37G8/RTVfDTP9XNYhdvUI/Tm_6KEiZfSOSbaC7/Wm_QgpSH5qK21Npa/iXURlA.webp" alt="Shih Tzu Outlaw T-shirt Dress" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/3FP5BgnDlW5okMuy7ovuhSSwCPMpZu4ZVVlVmk0AmNg/w:1200/sm:1/enc/FOIw86V9o3xuAJ9A/w8qc05bzmzapeA65/yKqdrVOpXv__J7m-/84UbwCsl2wB4ceY7/r3EBLoP5_vQ_5W4-/BqDkPWiHV07nVg05/fq2HXLoP2aXmOo2d/-ykp1JMLZS8gzGfw/0bRP1YJJmcDa0ZLF/pUSCmF7Aex8t5RnI/fYzwyJ41tkJjHR2D/G2nkj9pb69jKA8K8/AftTdVPHoyOdWlq7/AOipeg.png" alt="" loading="lazy" />
     <span class="tag">Outlaw</span></a>
@@ -319,7 +330,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$40</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-shih-tzu-outlaw-brown-t-shirt-dress" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="wanted">
+<article class="card" data-col="wanted" data-line="t-shirt-dresses">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammit-wanted-chihuahua-t-shirt-dress" target="_blank" rel="noopener" aria-label="Buy the Wanted Chihuahua T-shirt Dress">
     <img class="main" src="https://imgproxy.fourthwall.dev/Q2aG3WbEDkMS5Kot57l6ObwM6m6By1LIHxOr3dbyCTk/w:1200/sm:1/enc/1XqLfnJYtAUpt8tp/vxYsYQR2lKetBnfq/rQKikdxeC-vY-7So/NJCa_eRIi8iR4Tww/dG-t3xUieWeZlkAf/-muNfObBQRULzV1b/ZBe8gpZvDkyW6qsI/GWFy0SEW_j0vzUix/LKR9jR0mqU5NRBup/WQwyVoeLzz_Gw2ZB/Zpd6oVT_FptBNtN1/wYzZ2ISQxq3kxJEg/X93J2BaNan2uvH-s/C8Tpzg.png" alt="Wanted Chihuahua T-shirt Dress" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/cpPZXRebEVKR1Qjxggg1IhGBhdhW-_gCPe-WAjgHge4/w:1920/sm:1/enc/1XqLfnJYtAUpt8tp/vxYsYQR2lKetBnfq/rQKikdxeC-vY-7So/NJCa_eRIi8iR4Tww/dG-t3xUieWeZlkAf/-muNfObBQRULzV1b/ZBe8gpZvDkyW6qsI/GWFy0SEW_j0vzUix/LKR9jR0mqU5NRBup/WQwyVoeLzz_Gw2ZB/Zpd6oVT_FptBNtN1/wYzZ2ISQxq3kxJEg/X93J2BaNan2uvH-s/C8Tpzg.webp" alt="" loading="lazy" />
     <span class="tag">Wanted</span></a>
@@ -327,7 +338,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$40</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammit-wanted-chihuahua-t-shirt-dress" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="wanted">
+<article class="card" data-col="wanted" data-line="t-shirt-dresses">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammit-wanted-doberman-t-shirt-dress" target="_blank" rel="noopener" aria-label="Buy the Wanted Doberman T-shirt Dress">
     <img class="main" src="https://imgproxy.fourthwall.dev/bs_aB3QkZdoK4MNVyeJPAt6Bxf6n-P9HK68zK0iHwCE/w:1200/sm:1/enc/dU1QWj33ghM6FMKm/2Kc0y9NHNlqU-YgG/nW-Lgk5SIBu7_rT8/d9FAS8J7E4D9Q6Dd/siZC9CvVBVkuAXGj/7SfE5XLtp4WEVxUH/AU_TmxFpCytn4vMX/OdMplVrPqw6cO2HH/r2V5S2nqmSi9GzGm/DuHCR1jlW43wwJdL/6t9RLaMC-X6KLEz1/3WQ7AGArwOeWFcLQ/TzW0xun5NPzzyG2G/r2UE9Q.png" alt="Wanted Doberman T-shirt Dress" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/eFlEUsciqqfaZHgqembPApOpFps1rd9eBhUFNzxWySY/w:1920/sm:1/enc/dU1QWj33ghM6FMKm/2Kc0y9NHNlqU-YgG/nW-Lgk5SIBu7_rT8/d9FAS8J7E4D9Q6Dd/siZC9CvVBVkuAXGj/7SfE5XLtp4WEVxUH/AU_TmxFpCytn4vMX/OdMplVrPqw6cO2HH/r2V5S2nqmSi9GzGm/DuHCR1jlW43wwJdL/6t9RLaMC-X6KLEz1/3WQ7AGArwOeWFcLQ/TzW0xun5NPzzyG2G/r2UE9Q.webp" alt="" loading="lazy" />
     <span class="tag">Wanted</span></a>
@@ -335,7 +346,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$40</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammit-wanted-doberman-t-shirt-dress" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="wanted">
+<article class="card" data-col="wanted" data-line="t-shirt-dresses">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-wanted-poodle-t-shirt-dress" target="_blank" rel="noopener" aria-label="Buy the Wanted Poodle T-shirt Dress">
     <img class="main" src="https://imgproxy.fourthwall.dev/vntEl9MJfqrG1mPZ7AS6EZxIGO7nbtNfAemNBi30n-4/w:1200/sm:1/enc/1xGEdTkUw9CpKKLE/4R3zdNbiCxhAvy5P/Ba8ijcqVTK50h4Zd/5metAqzRnJj1d_NE/AnRCkjIC1qrPwZCQ/9Obl_M7JRC5bZ9_F/wVS8-gBtN4BDzVbw/2sWO3b0izm4V5i1M/ILVXxXMIq7imqZjd/pJ_e23TzbVRq2DwC/o7gc18X-SAnTc7tM/vpMyZkUvVLqkErUS/R8dRivT7hcRtLXpC/ffvjFA.png" alt="Wanted Poodle T-shirt Dress" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/O87lDg_pxUqDO8l9w_ttWM6sIzM0xU6vdGV2d28HOSI/w:1920/sm:1/enc/1xGEdTkUw9CpKKLE/4R3zdNbiCxhAvy5P/Ba8ijcqVTK50h4Zd/5metAqzRnJj1d_NE/AnRCkjIC1qrPwZCQ/9Obl_M7JRC5bZ9_F/wVS8-gBtN4BDzVbw/2sWO3b0izm4V5i1M/ILVXxXMIq7imqZjd/pJ_e23TzbVRq2DwC/o7gc18X-SAnTc7tM/vpMyZkUvVLqkErUS/R8dRivT7hcRtLXpC/ffvjFA.webp" alt="" loading="lazy" />
     <span class="tag">Wanted</span></a>
@@ -343,15 +354,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$40</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-wanted-poodle-t-shirt-dress" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="outlaw">
-  <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-classic-retro-trucker-hat" target="_blank" rel="noopener" aria-label="Buy the Classic Retro Trucker Hat">
-    <img class="main" src="https://imgproxy.fourthwall.dev/M4uzTUGC3uybLG_Z_ghrEdmsWFtPeh5tVpKjD4fzR1A/w:1200/sm:1/enc/mu8GOgDab4Y41tGD/siWDYBxuYVRnXxz5/ZK1pneA6kaYycBSd/f-Bm63kKOW48zSZh/g5aIBTLnxVx6tAG-/D-l-Syfd9lILcRUz/X3oD0GQ8RXp4I4Ds/jN34T2gQbQVreNyg/LyBR1qYdAxF2_J8Q/3WF-2xL0o8x3rlEc/ZeFF-AOeJ3VmNvfV/dN6hruY-bv01hPOO/gw53zcCRdH3RuXM_/KuCfgNSbdI9Pb26Y/K1kIvSbWI-U.png" alt="Classic Retro Trucker Hat" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/h8Vk-0ahlC-bDB5DsMRxiNEMN_m6QTKvgxlLL2BDCBc/w:1920/sm:1/enc/mu8GOgDab4Y41tGD/siWDYBxuYVRnXxz5/ZK1pneA6kaYycBSd/f-Bm63kKOW48zSZh/g5aIBTLnxVx6tAG-/D-l-Syfd9lILcRUz/X3oD0GQ8RXp4I4Ds/jN34T2gQbQVreNyg/LyBR1qYdAxF2_J8Q/3WF-2xL0o8x3rlEc/ZeFF-AOeJ3VmNvfV/dN6hruY-bv01hPOO/gw53zcCRdH3RuXM_/KuCfgNSbdI9Pb26Y/K1kIvSbWI-U.jpg" alt="" loading="lazy" />
-    <span class="tag">Outlaw</span></a>
-  <div class="card-body"><h3>Classic Retro Trucker Hat</h3>
-    <div class="card-row"><span class="price">$25</span>
-    <a class="buy" href="https://koolteez.com/products/dawg-gammittm-classic-retro-trucker-hat" target="_blank" rel="noopener">Buy now ↗</a></div></div>
-</article>
-<article class="card" data-col="wanted">
+<article class="card" data-col="wanted" data-line="tees-tops">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-chihuahua-fitted-racerback-tank-top" target="_blank" rel="noopener" aria-label="Buy the Chihuahua Racerback Tank">
     <img class="main" src="https://imgproxy.fourthwall.dev/zU1tjmI6jFztNssDBb3sF-bb_Tr3rjMMbGaF1MyhuNo/w:1200/sm:1/enc/hpqUQs6Q2gm551Yd/OA5EyphSV5m1Xj5g/yAtbuFiYNbD8sCvO/90QxuaSfTlne07KS/5zDUAzqwX66K7oB4/tTmX_efCWNq-BODz/jEwth9xu8lSP-XrL/RACd1pyY0SYqSt6D/Jj9nC7g4SQcpq-LF/OwUeP8ph4n0tDVHC/e5luJlTRbXAQH001/X8YbA0SHECreWEj-/HrMEGTG9u2niz9hb/LdE9OFVmoVPIX-Hg/h-NWSXgp7F0.png" alt="Chihuahua Racerback Tank" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/wpTOJBRwRja5KUh7huwUERJa7W0GuBfoMGi15j8dx1I/w:1920/sm:1/enc/hpqUQs6Q2gm551Yd/OA5EyphSV5m1Xj5g/yAtbuFiYNbD8sCvO/90QxuaSfTlne07KS/5zDUAzqwX66K7oB4/tTmX_efCWNq-BODz/jEwth9xu8lSP-XrL/RACd1pyY0SYqSt6D/Jj9nC7g4SQcpq-LF/OwUeP8ph4n0tDVHC/e5luJlTRbXAQH001/X8YbA0SHECreWEj-/HrMEGTG9u2niz9hb/LdE9OFVmoVPIX-Hg/h-NWSXgp7F0.webp" alt="" loading="lazy" />
     <span class="tag">Wanted</span></a>
@@ -359,7 +362,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$29</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-chihuahua-fitted-racerback-tank-top" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="wanted">
+<article class="card" data-col="wanted" data-line="tees-tops">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-nobody-move-doberman-womens-relaxed-t-shirt" target="_blank" rel="noopener" aria-label="Buy the Nobody Move Doberman Relaxed Tee">
     <img class="main" src="https://imgproxy.fourthwall.dev/ZeCjLv0rFuxxX5DWYElhwXVzBRGMsFno5VzD5mN4X3Q/w:1200/sm:1/enc/9OhBQAICTVq-1Kko/ethVhN6-_S9bN7iA/Lb414AHW_fzpuwpa/QMqwFDH33ZL4sOYg/BRikaxRMw1_48dyo/HPPajPSdi3fTocx2/V8C_EJTX4kjJZ3gx/06xQRzlEa39pTVDR/eievC5LS1FZep01Q/XmbS6VbzvDuuJ2Z2/xoCQSx3Rme9gmoIQ/15f2KqB97eHp0JER/rxe_zX-6PCKkK6uU/PP9Y3_MLR6-NnI02/KfSy--LY4_w.png" alt="Nobody Move Doberman Relaxed Tee" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/Yj8tN2adJbXlcT1ViUhmvsbcG4sEwkbFJoYxPC0bmP0/w:1920/sm:1/enc/Y57GeFPlzgWzzb4O/JC7N_hGctN4SbQWn/YklinJ_m6RuH10uG/aosPCLUK8YCPjcGA/nDGWFTqhIKZjw49U/xvvBRri1WV6uAC_3/iOG_n5viagn_YD1U/qKNL18c5SgykIA5C/CjIsRh-TycPcDvwW/RiZdEotoQT3TFdEK/6vFaSDZcH-W3GYwY/O7ctsxXE4tl_IsZK/Xbi31_iNDH81pCmg/9sZe6w.jpg" alt="" loading="lazy" />
     <span class="tag">Wanted</span></a>
@@ -367,13 +370,21 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="card-row"><span class="price">$32</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-nobody-move-doberman-womens-relaxed-t-shirt" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
-<article class="card" data-col="wanted">
+<article class="card" data-col="wanted" data-line="tees-tops">
   <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-wanted-biewer-terrier-premium-crop-top" target="_blank" rel="noopener" aria-label="Buy the Wanted Biewer Terrier Crop Top">
     <img class="main" src="https://imgproxy.fourthwall.dev/VsZo_1RBPsMsF8yKJBFLgh-OdcBQAAmVR7e_gSMPdp4/w:1200/sm:1/enc/oIGPW4pd7_G1Tddm/RswYPUv3lzNW7lUc/nvPAtGbSVkOIwDh6/6FDZR-ZTjiIQe03r/8uzmNtc88Ur303tY/icYdnZNZWQclqcCk/6KFYo5pvER8FzUye/iBBdQ3LXjFQJ5iK5/MnP8jOjaK2BycBoC/9pA4OQ47YX0JFM0C/DRXl4eabhJ992msZ/xC5j4RX9EKtzC9Y4/LTSfvo6LldWgRWcM/BQiZug.png" alt="Wanted Biewer Terrier Crop Top" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/z3Sg9zDCo3aRk_FucXQzNB1Zt_o3kP8t78xGJrXor0k/w:1920/sm:1/enc/oIGPW4pd7_G1Tddm/RswYPUv3lzNW7lUc/nvPAtGbSVkOIwDh6/6FDZR-ZTjiIQe03r/8uzmNtc88Ur303tY/icYdnZNZWQclqcCk/6KFYo5pvER8FzUye/iBBdQ3LXjFQJ5iK5/MnP8jOjaK2BycBoC/9pA4OQ47YX0JFM0C/DRXl4eabhJ992msZ/xC5j4RX9EKtzC9Y4/LTSfvo6LldWgRWcM/BQiZug.webp" alt="" loading="lazy" />
     <span class="tag">Wanted</span></a>
   <div class="card-body"><h3>Wanted Biewer Terrier Crop Top</h3>
     <div class="card-row"><span class="price">$35</span>
     <a class="buy" href="https://koolteez.com/products/dawg-gammittm-wanted-biewer-terrier-premium-crop-top" target="_blank" rel="noopener">Buy now ↗</a></div></div>
+</article>
+<article class="card" data-col="outlaw" data-line="hats">
+  <a class="card-img" href="https://koolteez.com/products/dawg-gammittm-classic-retro-trucker-hat" target="_blank" rel="noopener" aria-label="Buy the Classic Retro Trucker Hat">
+    <img class="main" src="https://imgproxy.fourthwall.dev/M4uzTUGC3uybLG_Z_ghrEdmsWFtPeh5tVpKjD4fzR1A/w:1200/sm:1/enc/mu8GOgDab4Y41tGD/siWDYBxuYVRnXxz5/ZK1pneA6kaYycBSd/f-Bm63kKOW48zSZh/g5aIBTLnxVx6tAG-/D-l-Syfd9lILcRUz/X3oD0GQ8RXp4I4Ds/jN34T2gQbQVreNyg/LyBR1qYdAxF2_J8Q/3WF-2xL0o8x3rlEc/ZeFF-AOeJ3VmNvfV/dN6hruY-bv01hPOO/gw53zcCRdH3RuXM_/KuCfgNSbdI9Pb26Y/K1kIvSbWI-U.png" alt="Classic Retro Trucker Hat" loading="lazy" /><img class="alt" src="https://imgproxy.fourthwall.dev/h8Vk-0ahlC-bDB5DsMRxiNEMN_m6QTKvgxlLL2BDCBc/w:1920/sm:1/enc/mu8GOgDab4Y41tGD/siWDYBxuYVRnXxz5/ZK1pneA6kaYycBSd/f-Bm63kKOW48zSZh/g5aIBTLnxVx6tAG-/D-l-Syfd9lILcRUz/X3oD0GQ8RXp4I4Ds/jN34T2gQbQVreNyg/LyBR1qYdAxF2_J8Q/3WF-2xL0o8x3rlEc/ZeFF-AOeJ3VmNvfV/dN6hruY-bv01hPOO/gw53zcCRdH3RuXM_/KuCfgNSbdI9Pb26Y/K1kIvSbWI-U.jpg" alt="" loading="lazy" />
+    <span class="tag">Outlaw</span></a>
+  <div class="card-body"><h3>Classic Retro Trucker Hat</h3>
+    <div class="card-row"><span class="price">$25</span>
+    <a class="buy" href="https://koolteez.com/products/dawg-gammittm-classic-retro-trucker-hat" target="_blank" rel="noopener">Buy now ↗</a></div></div>
 </article>
   </div>
 </div></section>
@@ -382,7 +393,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
   <span class="kicker">DAWG GAMMIT™</span><h2>Privacy</h2>
   <p>This website is a showcase for DAWG GAMMIT™ designs. It does not ask for your name, email address or payment details.</p>
   <p>When you tap Buy now you leave this site and complete your order on our secure checkout store. That store collects only the details needed to take payment and deliver your order, and its own privacy policy is shown at checkout.</p>
-  <p>The only thing this site keeps is your last product filter (All, Outlaw or Wanted), stored in your own browser so the page opens the way you left it.</p>
+  <p>The only thing this site keeps is your last product filter, stored in your own browser so the page opens the way you left it.</p>
   <a class="btn btn-line" href="#top">Back to the shop</a>
 </div></div>
 <div class="info" id="v-copyright" hidden><div class="wrap">
@@ -413,15 +424,18 @@ h1,h2,h3{text-wrap:balance;margin:0}
 
 <script>
 (function(){
-  var tabs=document.querySelectorAll('.tab'), cards=document.querySelectorAll('.card');
-  function apply(f){
-    tabs.forEach(function(t){t.setAttribute('aria-pressed', String(t.dataset.f===f))});
-    cards.forEach(function(c){c.hidden = !(f==='all' || c.dataset.col===f)});
-    try{localStorage.setItem('dg-filter',f)}catch(e){}
+  var tabs=document.querySelectorAll('.tab'), cards=document.querySelectorAll('.card'), LINES=["hoodies", "t-shirt-dresses", "tees-tops", "hats"];
+  var f={col:'all',line:'all'};
+  try{var s=JSON.parse(localStorage.getItem('dg-filter2')); if(s&&s.col) f=s;}catch(e){}
+  function apply(){
+    tabs.forEach(function(t){t.setAttribute('aria-pressed', String(f[t.dataset.g]===t.dataset.v))});
+    var shown=0;
+    cards.forEach(function(c){var ok=(f.col==='all'||c.dataset.col===f.col)&&(f.line==='all'||c.dataset.line===f.line); c.hidden=!ok; if(ok) shown++;});
+    document.getElementById('none').hidden = shown>0;
+    try{localStorage.setItem('dg-filter2',JSON.stringify(f))}catch(e){}
   }
-  tabs.forEach(function(t){t.addEventListener('click',function(){apply(t.dataset.f)})});
-  var saved='all'; try{saved=localStorage.getItem('dg-filter')||'all'}catch(e){}
-  apply(saved);
+  tabs.forEach(function(t){t.addEventListener('click',function(){f[t.dataset.g]=t.dataset.v; apply();})});
+  apply();
 
   // Privacy / Copyright / Contact open as their own pages; any other address shows the shop
   var main=document.querySelector('main'), views={privacy:1,copyright:1,contact:1};
@@ -430,6 +444,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
     document.querySelectorAll('.info').forEach(function(v){v.hidden = v.id!=='v-'+h});
     main.hidden = !!views[h];
     if(views[h]) window.scrollTo(0,0);
+    if(LINES.indexOf(h)>-1){ f.line=h; f.col='all'; apply(); document.getElementById('shop').scrollIntoView(); }
   }
   window.addEventListener('hashchange',route); route();
 
