@@ -172,6 +172,7 @@ const LOGIN = fs.readFileSync(path.join(APP, 'login.html'), 'utf8');
 const ADMIN = fs.readFileSync(path.join(APP, 'admin.html'), 'utf8');
 
 const server = http.createServer(async (req, res) => {
+  if (req.method === 'HEAD') { req.method = 'GET'; const end = res.end.bind(res); res.write = () => true; res.end = (b, ...a) => end(); }   // link checkers and social previews ask with HEAD
   const url = new URL(req.url, 'http://x'); const p = url.pathname;
   try {
     if (req.method === 'GET' && (p === '/' || p === '/index.html')) {   // browsers re-check on every visit, so a publish shows at once
