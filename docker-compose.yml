@@ -23,8 +23,12 @@ services:
       caddy: ${SITE_HOSTS}
       caddy.reverse_proxy: "{{upstreams 3000}}"
       caddy.encode: gzip
+      # Some home and mobile networks drop large HTTP/3 (QUIC) packets, so photos stall half-loaded.
+      # "clear" tells browsers to use ordinary HTTPS (HTTP/2) for this site only.
+      caddy.header: "Alt-Svc clear"
       caddy_1: ${REDIRECT_HOSTS}
       caddy_1.redir: "https://${MAIN_HOST}{uri} permanent"
+      caddy_1.header: "Alt-Svc clear"
     networks:
       - web
     restart: unless-stopped
