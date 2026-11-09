@@ -256,11 +256,11 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
 <body>
 {{PREVIEW_BANNER}}
 <header class="top"><div class="wrap">
-  <a class="brand" href="#top"><b class="fit-src">DAWG GAMMIT<span class="tm">™</span></b><small class="fit">K9's Bark It All The Time</small></a>
+  <a class="brand" href="/" data-home><b class="fit-src">DAWG GAMMIT<span class="tm">™</span></b><small class="fit">K9's Bark It All The Time</small></a>
   <nav class="nav" aria-label="Main">
+    <a href="/" data-home>Home</a>
     <a class="hide-sm" href="#looks">Lookbook</a>
     {{NAV_LINES}}
-    <a href="#shop">Shop</a>
     <a class="btn btn-gold" href="https://koolteez.com/collections/outlaw" target="_blank" rel="noopener">Buy now ↗</a>
   </nav>
 </div></header>
@@ -318,14 +318,14 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
   <p>If you send us a message through the Contact form, we keep what you typed (your name, email address, company name if given, and message) so that we can reply. We do not use it for marketing or pass it to anyone else, and we delete it on request.</p>
   <p>When you tap Buy now you leave this site and complete your order on our secure checkout store. That store collects only the details needed to take payment and deliver your order, and its own privacy policy is shown at checkout.</p>
   <p>The only thing this site keeps in your browser is your last product filter, stored in your own browser so the page opens the way you left it.</p>
-  <a class="btn btn-line" href="#top">Back to the shop</a>
+  <a class="btn btn-line" href="/" data-home>Back to the shop</a>
 </div></div>
 <div class="info" id="v-copyright" hidden><div class="wrap">
   <span class="kicker">DAWG GAMMIT™</span><h2>Copyright</h2>
   <p>© 2026 DAWG GAMMIT™. All rights reserved.</p>
   <p>All designs, characters and artwork on this site are original and may not be copied or reproduced without permission.</p>
   <p>DAWG GAMMIT™ and K9's Bark It All The Time™ are trademarks.</p>
-  <a class="btn btn-line" href="#top">Back to the shop</a>
+  <a class="btn btn-line" href="/" data-home>Back to the shop</a>
 </div></div>
 <div class="info" id="v-contact" hidden><div class="wrap">
   <h2>Contact</h2>
@@ -350,20 +350,20 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
     <div class="cf-f"><label for="cf-msg">Your message</label><textarea id="cf-msg" name="message" rows="6" maxlength="3000" required></textarea></div>
     <div class="cf-hp" aria-hidden="true"><label for="cf-web">Leave this empty</label><input id="cf-web" name="website" type="text" tabindex="-1" autocomplete="off"></div>
     <p class="cf-err" id="cf-err" role="alert" hidden></p>
-    <div class="cf-row"><button class="btn btn-gold" type="submit" id="cf-send">Send message</button><a class="btn btn-line" href="#top">Back to the shop</a></div>
+    <div class="cf-row"><button class="btn btn-gold" type="submit" id="cf-send">Send message</button><a class="btn btn-line" href="/" data-home>Back to the shop</a></div>
     <p class="cf-small">We use these details only to reply to you. See <a href="#privacy">Privacy</a>.</p>
   </form>
   <div class="cf-done" id="cf-done" role="status" tabindex="-1" hidden>
     <h3>Message sent</h3>
     <p>Thanks. We have your message and will reply to the email address you gave.</p>
-    <a class="btn btn-line" href="#top">Back to the shop</a>
+    <a class="btn btn-line" href="/" data-home>Back to the shop</a>
   </div>
 </div></div>
 
 <footer class="foot"><div class="wrap">
   <div class="foot-brand"><b class="fit-src">DAWG GAMMIT<span class="tm">™</span></b><span class="fit">K9's Bark It All The Time</span></div>
   <nav class="foot-nav" aria-label="Footer">
-    <a href="#top">Home</a>
+    <a href="/" data-home>Home</a>
     <a href="#privacy">Privacy</a>
     <a href="#copyright">Copyright</a>
     <a href="#contact">Contact</a>
@@ -398,6 +398,10 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
     if(LINES.indexOf(h)>-1){ f.line=h; f.col='all'; apply(); document.getElementById('shop').scrollIntoView(); }
   }
   window.addEventListener('hashchange',route); route();
+  // Home goes to the top of the shop with a clean address (no # on the end)
+  document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.closest('a[data-home]'); if(!a||e.metaKey||e.ctrlKey||e.shiftKey||e.button) return;
+    e.preventDefault(); if(location.hash) history.pushState(null,'',location.pathname+location.search); window.dispatchEvent(new Event('hashchange')); window.scrollTo({top:0,behavior:'smooth'}); });
+  window.addEventListener('popstate',route);
 
   // stretch "K9's Bark It All The Time" to the exact width of the wordmark above it
   function fit(){
