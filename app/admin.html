@@ -111,6 +111,19 @@ select,input[type=text]{border:1.5px solid var(--line);border-radius:4px;padding
 .lt-b{display:flex;flex-direction:column;gap:8px;padding:8px}
 .lt-b select{width:100%;font-size:.8rem}
 .lt .it-ctl{justify-content:space-between}
+.lt{position:relative;cursor:grab}
+.lt.dragging{opacity:.4}
+.lt.drop-before{box-shadow:-4px 0 0 var(--accent)}
+.lt.drop-after{box-shadow:4px 0 0 var(--accent)}
+.lt-pos{position:absolute;top:6px;left:6px;background:var(--ink);color:var(--panel);font:700 .8rem/1 system-ui,sans-serif;border-radius:4px;padding:5px 7px;pointer-events:none}
+.lt-pos.off{background:#8a6a4a}
+.lt-drag{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;font:600 .7rem/1 system-ui,sans-serif;border-radius:4px;padding:5px 7px;pointer-events:none}
+.lk-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.lk-btns button,.lk-btns label{font:600 .72rem/1.1 system-ui,sans-serif;border:1px solid var(--line);background:var(--panel);color:inherit;border-radius:4px;padding:7px 4px;cursor:pointer;text-align:center}
+.lk-btns button:hover:not(:disabled),.lk-btns label:hover{border-color:var(--accent)}
+.lk-btns button:disabled{opacity:.35;cursor:default}
+.lk-btns .wide{grid-column:1/-1}
+.lk-btns .danger{color:#b0451c}
 label.ib{cursor:pointer}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:.75em 1.1em;border-radius:5px;font-size:.9rem;display:flex;gap:14px;align-items:center;max-width:calc(100% - 32px);z-index:30;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .toast button{background:none;border:0;color:var(--tan);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
@@ -191,6 +204,7 @@ a.btn{text-decoration:none;color:inherit;display:inline-block}
       </div>
     </div>
     <p class="hint">These photos fill the lookbook on the site, shown in full so heads and boots are never cut off. Each photo links to the product it shows. Take one from a product's KoolTeez photos, or upload your own; tall photos (9:16, like a phone screen) fit best.</p>
+    <p class="hint"><strong>Ordering:</strong> new photos are added first. Drag a photo to a new place, or use the buttons under it. The number on each photo is its position on the site; the site shows the first 12. Changes save as a draft; press <strong>Publish</strong> to put them live.</p>
     <div class="lk" id="lk"></div>
   </section>
 </div>
@@ -288,7 +302,7 @@ a.btn{text-decoration:none;color:inherit;display:inline-block}
     else c = col(t);
     var add = review.filter(function(r){return r.pick && r.slug}).map(function(r){
       return { slug:r.slug, name:r.name, price:r.price, img:r.img, alt:r.alt, photo:r.photo, url:r.url, visible:true, look:!!r.look, line: lineOf(r.name) }; });
-    add.forEach(function(a){ if (a.look && a.photo && !state.look.some(function(l){return l.src===a.photo})) state.look.push({ src:a.photo, source:'koolteez', slug:a.slug }); });
+    add.forEach(function(a){ if (a.look && a.photo && !state.look.some(function(l){return l.src===a.photo})) state.look.unshift({ src:a.photo, source:'koolteez', slug:a.slug }); });
     add.forEach(function(a){ if (!c.items.some(function(i){return i.slug===a.slug})) c.items.push(a); });
     state.sel = c.id; review = []; save(); renderReview(); render();
     $('fetch-note').textContent = '';
@@ -350,13 +364,16 @@ a.btn{text-decoration:none;color:inherit;display:inline-block}
   function renderLook(){
     var prods = allItems();
     $('lk').innerHTML = state.look.length ? state.look.map(function(l, i){
-      return '<div class="lt"><img src="'+l.src+'" alt="">'+
+      var last = state.look.length-1;
+      return '<div class="lt" draggable="true" data-i="'+i+'"><img src="'+l.src+'" alt="" draggable="false"><span class="lt-pos'+(i>=12?' off':'')+'">'+(i<12?'No. '+(i+1):'Not shown (13+)')+'</span><span class="lt-drag">✥ Drag</span>'+
         '<div class="lt-b"><span class="chip '+(l.source==='upload'?'live':'new')+'" style="align-self:flex-start">'+(l.source==='upload'?'Uploaded photo':'KoolTeez photo')+'</span>'+
         '<label class="lab" for="lk-'+i+'">Links to</label><select class="lk-link" id="lk-'+i+'" data-i="'+i+'">'+prods.map(function(p){return '<option value="'+p.slug+'"'+(p.slug===l.slug?' selected':'')+'>'+esc(p.name)+'</option>';}).join('')+'</select>'+
-        '<div class="it-ctl"><button class="ib" type="button" data-a="l" data-i="'+i+'" aria-label="Move earlier"'+(i===0?' disabled':'')+'>←</button>'+
-        '<button class="ib" type="button" data-a="r" data-i="'+i+'" aria-label="Move later"'+(i===state.look.length-1?' disabled':'')+'>→</button>'+
-        '<label class="ib" for="up-'+i+'" title="Replace with an uploaded photo" aria-label="Replace with an uploaded photo">⤒</label><input type="file" id="up-'+i+'" data-i="'+i+'" accept="image/jpeg,image/png,image/webp" hidden>'+
-        '<button class="ib" type="button" data-a="x" data-i="'+i+'" aria-label="Remove from lookbook">✕</button></div></div></div>';
+        '<div class="lk-btns">'+
+        '<button type="button" data-a="f" data-i="'+i+'"'+(i===0?' disabled':'')+' class="wide">⇤ Move to first</button>'+
+        '<button type="button" data-a="l" data-i="'+i+'"'+(i===0?' disabled':'')+'>← Earlier</button>'+
+        '<button type="button" data-a="r" data-i="'+i+'"'+(i===last?' disabled':'')+'>Later →</button>'+
+        '<label for="up-'+i+'">Replace photo</label><input type="file" id="up-'+i+'" data-i="'+i+'" accept="image/jpeg,image/png,image/webp" hidden>'+
+        '<button type="button" data-a="x" data-i="'+i+'" class="danger">✕ Remove</button></div></div></div>';
     }).join('') : '<div class="empty">No lookbook photos yet. Upload one or pick a product photo above.</div>';
     var used = state.look.map(function(l){return l.src;});
     var avail = prods.filter(function(p){ return p.photo && used.indexOf(p.photo) < 0; });
@@ -377,21 +394,35 @@ a.btn{text-decoration:none;color:inherit;display:inline-block}
     fr.readAsDataURL(file);
   }
   $('kt-photo').onchange = function(){ var p = allItems().filter(function(x){return x.slug===this.value}, this)[0]; if (!p) return;
-    state.look.push({ src:p.photo, source:'koolteez', slug:p.slug }); save(); render(); toast(p.name + ' photo added to the lookbook.'); };
+    state.look.unshift({ src:p.photo, source:'koolteez', slug:p.slug }); save(); render(); toast(p.name + ' photo added first in the lookbook.'); };
   $('up-new').onchange = function(){ var f = this.files[0]; this.value = '';
     readImage(f, function(src){ var first = allItems()[0];
-      state.look.push({ src:src, source:'upload', slug: first ? first.slug : '' }); save(); render();
-      toast('Photo added at the end of the lookbook. Choose the product it links to.'); }); };
+      state.look.unshift({ src:src, source:'upload', slug: first ? first.slug : '' }); save(); render();
+      toast('Photo added first in the lookbook. Choose the product it links to under the photo.'); }); };
   $('lk').addEventListener('change', function(e){ var i = +e.target.dataset.i;
     if (e.target.classList.contains('lk-link')) { state.look[i].slug = e.target.value; save(); return; }
     if (e.target.type === 'file') { var f = e.target.files[0];
       readImage(f, function(src){ state.look[i].src = src; state.look[i].source = 'upload'; save(); render(); toast('Photo replaced.'); }); } });
-  $('lk').addEventListener('click', function(e){ var b = e.target.closest('button.ib'); if (!b) return;
+  $('lk').addEventListener('click', function(e){ var b = e.target.closest('.lk-btns button'); if (!b || b.disabled) return;
     var i = +b.dataset.i, L = state.look;
+    if (b.dataset.a==='f' && i>0) L.unshift(L.splice(i,1)[0]);
     if (b.dataset.a==='l' && i>0) L.splice(i-1,0,L.splice(i,1)[0]);
     if (b.dataset.a==='r' && i<L.length-1) L.splice(i+1,0,L.splice(i,1)[0]);
     if (b.dataset.a==='x'){ var gone = L.splice(i,1)[0]; save(); render(); toast('Photo removed from the lookbook.', function(){ L.splice(i,0,gone); save(); render(); }); return; }
     save(); render(); });
+  (function(){   // drag a photo onto another to move it there
+    var from = null, lk = $('lk');
+    function clear(){ [].forEach.call(lk.querySelectorAll('.drop-before,.drop-after'), function(t){ t.classList.remove('drop-before','drop-after'); }); }
+    function side(t, e){ var r = t.getBoundingClientRect(); return e.clientX < r.left + r.width/2 ? 'before' : 'after'; }
+    lk.addEventListener('dragstart', function(e){ var t = e.target.closest && e.target.closest('.lt'); if (!t || e.target.closest('select,button,label,input')) { e.preventDefault(); return; }
+      from = +t.dataset.i; t.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(from)); } catch(x){} });
+    lk.addEventListener('dragover', function(e){ if (from === null) return; var t = e.target.closest('.lt'); if (!t) return; e.preventDefault(); clear(); t.classList.add('drop-' + side(t, e)); });
+    lk.addEventListener('dragleave', function(e){ if (!lk.contains(e.relatedTarget)) clear(); });
+    lk.addEventListener('drop', function(e){ var t = e.target.closest('.lt'); if (from === null || !t) return; e.preventDefault();
+      var to = +t.dataset.i + (side(t, e) === 'after' ? 1 : 0); if (to > from) to--; clear();
+      if (to !== from) { state.look.splice(to, 0, state.look.splice(from, 1)[0]); save(); render(); toast('Photo moved to No. ' + (to+1) + '.'); } from = null; });
+    lk.addEventListener('dragend', function(){ clear(); from = null; [].forEach.call(lk.querySelectorAll('.dragging'), function(t){ t.classList.remove('dragging'); }); });
+  })();
   function renderPreview(){
     var c = col(state.sel);
     $('pv').innerHTML = (c ? c.items.filter(function(i){return i.visible}) : []).map(function(it){
