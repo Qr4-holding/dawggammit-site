@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>DAWG GAMMIT™ admin sign-in</title>
+<style>
+:root{--bg:#150c06;--panel:#2a1709;--ink:#f1dfba;--tan:#e2b77a;--muted:#c79a66;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+form{width:100%;max-width:360px;background:var(--panel);border:1px solid rgba(226,183,122,.3);border-radius:8px;padding:28px;display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font:800 1.6rem/1 Rockwell,"Roboto Slab",Georgia,serif;color:var(--tan);letter-spacing:.02em}
+p{margin:0;color:var(--muted);font-size:.9rem}
+label{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+input{font:inherit;color:inherit;background:var(--bg);border:1.5px solid rgba(226,183,122,.4);border-radius:5px;padding:.7em .8em}
+input:focus-visible,button:focus-visible{outline:2px solid var(--tan);outline-offset:2px}
+button{font:600 .9rem/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;background:linear-gradient(180deg,#f3d29c,#d99a4e);color:#2a1709;border:0;border-radius:5px;padding:.95em;cursor:pointer}
+.msg{color:#ffb4a2;min-height:1.2em}
+</style></head>
+<body>
+<form method="post" action="/admin/login">
+  <h1>DAWG GAMMIT™</h1>
+  <p>Shop admin. Sign in to manage collections, products and the lookbook.</p>
+  <label for="password">Password</label>
+  <input type="password" id="password" name="password" autocomplete="current-password" required autofocus>
+  <button type="submit">Sign in</button>
+  <span class="msg" role="alert">{{MSG}}</span>
+</form>
+</body></html>

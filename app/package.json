@@ -1,0 +1,9 @@
+{
+  "name": "dawggammit-site",
+  "private": true,
+  "description": "DAWG GAMMIT shop window and admin",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=22" },
+  "dependencies": { "sharp": "0.33.5" }
+}

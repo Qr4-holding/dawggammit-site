@@ -1,16 +1,27 @@
-# DAWG GAMMIT shop window, as deployed on the Hostinger VPS (Docker manager project "dawggammit").
-# Project environment (set on the server only):
+# DAWG GAMMIT site + shop admin, as deployed on the Hostinger VPS (Docker manager project "dawggammit").
+# Project environment (set on the server only, never in this repo):
 #   SITE_HOSTS     = the main domains Caddy serves the site on, e.g. "dawggammit.com, www.dawggammit.com"
 #   MAIN_HOST      = the one address every other domain redirects to, e.g. "dawggammit.com"
 #   REDIRECT_HOSTS = extra domains that permanently redirect to MAIN_HOST, e.g. "dawggamit.com, www.dawggamit.com"
-# Updating: push to main, then restart the project (the container clones main on start).
+#   ADMIN_PASSWORD = the password for dawggammit.com/admin (sign-in is off when empty)
+#   SESSION_SECRET = a long random string that signs admin sign-ins
+# Shop data and uploaded photos live in the "data" volume, so they survive restarts and updates.
+# Updating the code: push to main, then restart the project (the container clones main on start).
 services:
   web:
-    image: nginx:1.27-alpine
-    command: ["sh", "-c", "apk add --no-cache git >/dev/null && rm -rf /src && git clone --depth 1 https://github.com/Qr4-holding/dawggammit-site.git /src && cp -r /src/site/. /usr/share/nginx/html/ && exec nginx -g 'daemon off;'"]
+    image: node:22-alpine
+    command: ["sh", "-c", "apk add --no-cache git >/dev/null && rm -rf /src && git clone --depth 1 https://github.com/Qr4-holding/dawggammit-site.git /src && cd /src/app && npm install --omit=dev --no-audit --no-fund && exec node server.js"]
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATA_DIR=/data
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - SESSION_SECRET=${SESSION_SECRET:-}
+    volumes:
+      - data:/data
     labels:
       caddy: ${SITE_HOSTS}
-      caddy.reverse_proxy: "{{upstreams 80}}"
+      caddy.reverse_proxy: "{{upstreams 3000}}"
       caddy.encode: gzip
       caddy_1: ${REDIRECT_HOSTS}
       caddy_1.redir: "https://${MAIN_HOST}{uri} permanent"
@@ -20,3 +31,5 @@ services:
 networks:
   web:
     external: true
+volumes:
+  data: {}
