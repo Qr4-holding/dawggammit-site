@@ -243,6 +243,18 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .cf-done h3{font-family:var(--display);font-weight:400;font-size:1.6rem;color:var(--tan)}
 @media (max-width:620px){.cf-2{grid-template-columns:1fr}.cf{padding:18px}}
 
+/* phones and narrow screens: the photo leads, with one line above it (the logo already says the name) */
+.hero-m{display:none}
+@media (max-width:820px){
+  .hero-copy>*:not(.hero-m){display:none}
+  .hero-m{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;animation:rise .6s ease .1s both}
+  .hero-m span{font-family:var(--label);font-weight:600;font-size:clamp(.95rem,4.2vw,1.2rem);letter-spacing:.16em;text-transform:uppercase;color:var(--parch)}
+  .hero-m b{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,9vw,2.8rem);line-height:1.05;color:var(--tan);text-shadow:0 4px 20px rgba(0,0,0,.6)}
+  .hero .wrap{padding-block:18px 0;gap:14px}
+  .hero-copy{padding-bottom:0}
+  .hero-man{max-width:min(100%,420px);max-height:66vh}
+}
+
 @media (hover:none){.look{transform:none}}
 @media (max-width:520px){.look::before{inset:6px}.ticker span,.ticker b{font-size:.9rem}}
 @media (prefers-reduced-motion:reduce){.rv{opacity:1;translate:none}.sec-head h2::after{transform:scaleX(1)}.dust{display:none}.ticker-track{animation:none!important}}
@@ -272,6 +284,7 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
   <div class="dust" aria-hidden="true"></div>
   <div class="wrap">
     <div class="hero-copy">
+      <p class="hero-m"><span>The new Western collections</span><b>Wanted &amp; Outlaw</b></p>
       <span class="kicker">New · The Western Collections · Outlaw ★ Wanted</span>
       <h1>DAWG<br>GAMMIT<span class="tm">™</span></h1>
       <p class="bark">K9's Bark It All The Time</p>
