@@ -253,6 +253,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
   .hero .wrap{padding-block:18px 0;gap:14px}
   .hero-copy{padding-bottom:0}
   .hero-man{max-width:min(100%,420px);max-height:66vh}
+  .filters{display:none}
 }
 
 @media (hover:none){.look{transform:none}}
@@ -389,17 +390,21 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
 
 (function(){
   var tabs=document.querySelectorAll('.tab'), cards=document.querySelectorAll('.card'), LINES={{LINE_IDS}};
-  var f={col:'all',line:'all'}, popOn=false;
-  try{var s=JSON.parse(localStorage.getItem('dg-filter2')); if(s&&s.col) f=s;}catch(e){}
+  var f={col:'all',line:'all'}, popOn=false, phone=window.matchMedia&&matchMedia('(max-width:820px)');
+  // on phones the filter buttons are hidden, so always show every product there
+  function ph(){ return phone&&phone.matches; }
+  if(!ph()) try{var s=JSON.parse(localStorage.getItem('dg-filter2')); if(s&&s.col) f=s;}catch(e){}
   function apply(){
+    if(ph()){ f.col='all'; f.line='all'; }
     tabs.forEach(function(t){t.setAttribute('aria-pressed', String(f[t.dataset.g]===t.dataset.v))});
     var shown=0;
     cards.forEach(function(c){var ok=(f.col==='all'||c.dataset.col===f.col)&&(f.line==='all'||c.dataset.line===f.line); c.hidden=!ok; if(ok){ if(popOn){ c.classList.remove('pop'); c.style.animationDelay=Math.min(shown,11)*35+'ms'; void c.offsetWidth; c.classList.add('pop'); c.classList.add('in'); } shown++; }});
     document.getElementById('none').hidden = shown>0;
-    try{localStorage.setItem('dg-filter2',JSON.stringify(f))}catch(e){}
+    if(!ph()) try{localStorage.setItem('dg-filter2',JSON.stringify(f))}catch(e){}
   }
   tabs.forEach(function(t){t.addEventListener('click',function(){f[t.dataset.g]=t.dataset.v; popOn=true; apply();})});
   apply();
+  if(phone&&phone.addEventListener) phone.addEventListener('change',function(){ apply(); });
 
   // Privacy / Copyright / Contact open as their own pages; any other address shows the shop
   var main=document.querySelector('main'), views={privacy:1,copyright:1,contact:1};
