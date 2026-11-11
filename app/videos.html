@@ -269,6 +269,7 @@ function card(j) {
   if (b === 'scheduled') status = `<div class="note info">Scheduled for <b>${fmt(Date.parse(p.date))}</b> on ${(p.channels || []).map(c => CH[c]).join(', ')}</div>`;
   if (b === 'posted') status = `<div class="note ok">Posted ${fmt(Date.parse(p.date))}</div>`;
   if (p.error) status += `<div class="note bad">Posting failed: ${esc(p.error)}</div>`;
+  if (j.linkDead) status += `<div class="note bad">The KoolTeez page for this product was not found, so it cannot be posted with a buy link.</div>`;
   if (p.channelState) status += `<div class="chips">${p.channelState.map(c => `<span class="chip ${/error|fail/i.test(c.state) ? 'bad' : /publish/i.test(c.state) ? 'ok' : 'info'}">${esc(CH[c.channel] || c.channel)}: ${esc(c.state || '')}</span>`).join('')}</div>`;
   const editable = !['scheduled', 'posted'].includes(b) && p.state !== 'scheduling';
   const caps = j.captions || {};

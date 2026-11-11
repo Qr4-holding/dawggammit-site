@@ -171,6 +171,16 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
     return out;
   }
   const rotate = (list, n) => list.length ? list[n % list.length] : undefined;
+  // KoolTeez renamed product pages (dawg-gammittm-… became dawg-gammit-…): find the page that is really there
+  const linkCache = new Map();
+  async function liveLink(url) {
+    if (linkCache.has(url)) return linkCache.get(url);
+    const tryUrl = async u => { try { const r = await fetch(u, { headers: { 'User-Agent': 'DawgGammitSite/1.0 (+https://dawggammit.com)' }, signal: AbortSignal.timeout(15000) }); return r.status; } catch (e) { return 0; } };
+    const cands = [url]; if (/gammittm/.test(url)) cands.push(url.replace('gammittm', 'gammit'));
+    let out = { url, ok: null };
+    for (const u of cands) { const st = await tryUrl(u); if (st === 200) { out = { url: u, ok: true }; break; } if (st === 404) out = { url, ok: false }; }
+    linkCache.set(url, out); return out;
+  }
 
   return async function handle(req, res, p) {
     if (p === '/admin/videos' && req.method === 'GET') return send(res, 200, PAGE, undefined, { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
@@ -245,14 +255,14 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
           prod = shop.find(x => x.slug === mm2[1].toLowerCase());
           if (!prod) { try { const r = await readProduct(mm2[1].toLowerCase()); prod = { slug: r.slug, name: r.name, price: r.price, url: r.url, collection: '', photos: [r.img, r.alt, r.photo].filter(Boolean) }; } catch (e) { errors.push(it.url + ': ' + e.message); continue; } }
         }
-        if (prod) items.push(prod);
+        if (prod) { const L = await liveLink(prod.url); items.push({ ...prod, url: L.url, slug: (L.url.match(/products\/([a-z0-9-]+)/) || [])[1] || prod.slug, linkDead: L.ok === false }); }
       }
       const made = [];
       for (const prod of items) for (let k = 0; k < per; k++) {
         const seq = nextSeq();
         const j = { id: crypto.randomBytes(6).toString('hex'), seq, rev: 1, created: new Date().toISOString(), slug: prod.slug, url: prod.url, name: prod.name,
           price: prod.price || '', showPrice: body.showPrice !== false, collection: s.header, tagline: s.tagline, photos: prod.photos || [],
-          voice: rotate(voices, seq), track: rotate(trackList, seq), background: rotate(bgList, Math.floor(seq / 2)), length: 'full',
+          linkDead: !!prod.linkDead, voice: rotate(voices, seq), track: rotate(trackList, seq), background: rotate(bgList, Math.floor(seq / 2)), length: 'full',
           thumb: body.thumb && /^[a-f0-9]{40}\.jpg$/.test(body.thumb) ? body.thumb : '', autoThumb: body.autoThumb !== false, post: { state: 'review' } };
         j.captions = captionsFor(j); saveJob(j); made.push(j.id);
       }
@@ -280,6 +290,7 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
       const st = rj(path.join(jobDir(j.id), 'status.json'), {}) || {};
       if (st.rev !== j.rev || st.state !== 'ready') return json(res, 409, { error: 'This video is not rendered yet.' });
       if (j.post && ['scheduled', 'scheduling', 'posted'].includes(j.post.state)) return json(res, 409, { error: 'This video is already scheduled.' });
+      if (j.linkDead) { const L = await liveLink(j.url); if (L.ok) { j.url = L.url; j.linkDead = false; j.captions = captionsFor(j); saveJob(j); } else return json(res, 400, { error: 'The KoolTeez page for this product was not found, so the buy link would be dead. Check the product on KoolTeez, then make the video again from a working link.' }); }
       let date = body.date ? Date.parse(body.date) : nextSlot(takenSlots(j.id));
       if (!date || isNaN(date)) return json(res, 400, { error: 'No free posting time found. Check the posting times in Settings.' });
       if (date < Date.now() + 5 * 60e3) return json(res, 400, { error: 'Choose a time at least 5 minutes from now.' });

@@ -157,20 +157,47 @@ def make_andray(job, wd):
     nob, i1 = at("nobody moves"); feat, i2 = at("featuring", i1); dawg, i3 = at("dawg", i2)
     gam, i4 = at("gammit", i3); k9, i5 = at("k", i4 + 6); get, i6 = at("get yours", i5); url, _ = at("dot com", i6)
     speech_end = en[len(en) - 1 - next(k for k, c in enumerate(reversed(chars)) if c.strip())]
-    # trim the tail, then speed up a little if the whole thing would run past 15 s
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(wd / "vo-raw.mp3"), "-t", f"{speech_end + 0.15:.2f}", "-ac", "1", "-ar", "44100", str(wd / "vo-trim.wav")], check=True)
-    ln = audio_len(wd / "vo-trim.wav"); budget = MAX_LEN - 0.3 - 0.6 - 0.1
-    f = max(1.0, min(1.15, ln / budget))
+    # tighten long pauses (as Robert approved on the Quick On The Paw video), trim the ends,
+    # then speed up a little only if it would still run past 15 s
+    import numpy as np, wave
+    SR = 44100
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(wd / "vo-raw.mp3"), "-f", "s16le", "-ac", "1", "-ar", str(SR), "-"], capture_output=True, check=True).stdout
+    y = np.frombuffer(raw, dtype=np.int16).astype(float) / 32768
+    y = y[:int((speech_end + 0.15) * SR)]
+    hop = int(0.01 * SR); n = len(y) // hop
+    rms = np.sqrt((y[:n * hop].reshape(n, hop) ** 2).mean(1)); quiet = rms < max(0.012, 0.04 * rms.max())
+    cuts, i = [], 0                                       # (start_s, end_s) of audio to drop
+    lead = int(np.argmax(~quiet)); 
+    if lead * 0.01 > 0.05: cuts.append((0.0, lead * 0.01 - 0.05))
+    while i < n:
+        if quiet[i] and i > lead:
+            j = i
+            while j < n and quiet[j]: j += 1
+            run = (j - i) * 0.01
+            if j < n and run > 0.34:                     # an inner pause: keep 0.24 s of it
+                keep = 0.24; a = i * 0.01 + keep / 2; b = j * 0.01 - keep / 2; cuts.append((a, b))
+            i = j
+        else: i += 1
+    keepmask = np.ones(len(y), bool)
+    for a, b in cuts: keepmask[int(a * SR):int(b * SR)] = False
+    y2 = y[keepmask]
+    def remap(t):
+        return t - sum(min(b, t) - a for a, b in cuts if t > a)
+    with wave.open(str(wd / "vo-trim.wav"), "wb") as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes((np.clip(y2, -1, 1) * 32767).astype(np.int16).tobytes())
+    ln = len(y2) / SR; budget = MAX_LEN - 0.3 - 0.6 - 0.1
+    f = max(1.0, min(1.2, ln / budget))
     if f > 1.0:
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(wd / "vo-trim.wav"), "-filter:a", f"atempo={f:.3f}", str(wd / "vo.wav")], check=True)
     else: shutil.copy(wd / "vo-trim.wav", wd / "vo.wav")
-    sc = lambda t: round(t / f, 3)
+    log(f"voiceover {len(y)/SR:.2f}s -> {ln:.2f}s after {len(cuts)} pause cuts, speed x{f:.3f}")
+    sc = lambda t: round(remap(t) / f, 3)
     cues = {"captions": [[sc(nob), sc(feat) - 0.05, "Nobody moves…<br/>nobody gets hurt."],
                          [sc(k9), sc(get) - 0.05, "K9's Bark It All The Time,<br/>Y'all!"]],
             "name_at": [sc(feat), sc(dawg) - 0.1], "dawg": sc(dawg), "gammit": sc(gam),
             "flips": [sc(feat) + 0.5, sc(dawg) - 0.15], "end": sc(get), "url": sc(url), "len": round(audio_len(wd / "vo.wav"), 3)}
     wj(wd / "cues.json", cues)
-    return {"script": text, "model": model, "speed": round(f, 3)}
+    return {"script": text, "model": model, "speed": round(f, 3), "pauseCuts": len(cuts)}
 
 # ---------- one job ----------
 def render(job, jd, set_status):
