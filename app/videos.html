@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>DAWG GAMMIT Videos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/*CHUNKFIVE*/
+/* Same back-office look as the shop admin: saddle tones, quiet panels, one accent for the main action. */
+:root{
+  --bg:#f6f1e8; --panel:#fffdf8; --ink:#2a1709; --muted:#7a6047; --line:#e3d6c1; --accent:#a8541f; --accent-ink:#fffaf2;
+  --ok:#2f7a4b; --ok-bg:#e3f2e8; --warn:#9a6a00; --warn-bg:#fbf0d6; --info:#3c5f8a; --info-bg:#e5edf7; --bad:#a3301f; --bad-bg:#f7e1dc;
+  --logo:"ChunkFive","Rockwell",Georgia,serif; --label:"Oswald","Arial Narrow",sans-serif; --body:"DM Sans",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#17100a; --panel:#221710; --ink:#f1e2c6; --muted:#b99c7a; --line:#3c2a1c; --accent:#e0914c; --accent-ink:#1d1108;
+  --ok:#7fd19c; --ok-bg:#1b3324; --warn:#f0c46a; --warn-bg:#3a2d10; --info:#9cc0ea; --info-bg:#1b2a3d; --bad:#f0a091; --bad-bg:#3d1c16; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17100a; --panel:#221710; --ink:#f1e2c6; --muted:#b99c7a; --line:#3c2a1c; --accent:#e0914c; --accent-ink:#1d1108;
+  --ok:#7fd19c; --ok-bg:#1b3324; --warn:#f0c46a; --warn-bg:#3a2d10; --info:#9cc0ea; --info-bg:#1b2a3d; --bad:#f0a091; --bad-bg:#3d1c16; color-scheme:dark}
+*{box-sizing:border-box} [hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lab{font-family:var(--label);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:.74rem;color:var(--muted)}
+.btn{font-family:var(--label);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:.8rem;border:1.5px solid var(--line);background:var(--panel);border-radius:4px;padding:.6em 1em;cursor:pointer;white-space:nowrap;text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:.4em}
+.btn:hover{border-color:var(--accent)} .btn-main{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)} .btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-sm{padding:.4em .7em;font-size:.72rem}
+.bar{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding-block:12px}
+.logo{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.logo b{font-family:var(--logo);font-weight:400;font-size:1.45rem;color:var(--accent)} .logo sup{font-family:var(--body);font-size:.45rem;vertical-align:super}
+.logo span{font-family:var(--label);letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;color:var(--muted)}
+.stat{font-size:.85rem;color:var(--muted)} .stat b{color:var(--ink);font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0;margin-top:20px}
+.panel h2{margin:0;font-family:var(--label);font-weight:600;font-size:1.15rem;letter-spacing:.04em}
+.hint{margin:0;color:var(--muted);font-size:.88rem;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+select,input[type=text],input[type=password],input[type=number],input[type=date],input[type=datetime-local]{border:1.5px solid var(--line);border-radius:4px;padding:.5em .7em;background:var(--bg);min-width:0;max-width:100%}
+textarea{width:100%;min-height:96px;resize:vertical;border:1.5px solid var(--line);border-radius:4px;padding:10px;background:var(--bg);font-size:.88rem;line-height:1.45}
+.note{padding:.6em .8em;border-radius:4px;font-size:.88rem} .note.ok{background:var(--ok-bg);color:var(--ok)} .note.bad{background:var(--bad-bg);color:var(--bad)} .note.warn{background:var(--warn-bg);color:var(--warn)} .note.info{background:var(--info-bg);color:var(--info)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{border:1.5px solid var(--line);background:var(--bg);border-radius:999px;padding:.35em .9em;cursor:pointer;font-size:.85rem}
+.tab[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab b{font-variant-numeric:tabular-nums}
+/* product picker */
+.picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;max-height:360px;overflow:auto;padding:2px}
+.pick{display:flex;flex-direction:column;gap:4px;border:1.5px solid var(--line);border-radius:5px;padding:6px;background:var(--bg);cursor:pointer;font-size:.8rem;line-height:1.25}
+.pick img{width:100%;aspect-ratio:1;object-fit:contain;background:#fff;border-radius:3px}
+.pick.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.pick input{position:absolute;opacity:0;pointer-events:none}
+/* queue */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:14px}
+.card{display:grid;grid-template-columns:200px minmax(0,1fr);gap:14px;border:1px solid var(--line);border-radius:6px;padding:12px;background:var(--bg)}
+@media (max-width:560px){.card{grid-template-columns:1fr}.card .media{width:100%;max-width:240px;margin:0 auto}}
+.media{position:relative;aspect-ratio:9/16;background:#1a0e05;border-radius:5px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#f1dcb5;text-align:center;font-size:.85rem;padding:8px}
+.media video,.media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.card h3{margin:0;font-family:var(--label);font-weight:600;font-size:1.02rem;letter-spacing:.02em}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:.74rem;padding:.15em .55em;border-radius:3px;background:var(--panel);border:1px solid var(--line);color:var(--muted)}
+.chip.ok{background:var(--ok-bg);color:var(--ok);border-color:transparent} .chip.bad{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.chip.warn{background:var(--warn-bg);color:var(--warn);border-color:transparent} .chip.info{background:var(--info-bg);color:var(--info);border-color:transparent}
+.body{display:flex;flex-direction:column;gap:9px;min-width:0}
+details{border:1px solid var(--line);border-radius:5px;background:var(--panel)} summary{cursor:pointer;padding:.5em .8em;font-size:.88rem;font-weight:500}
+details>div{padding:0 .8em .8em;display:flex;flex-direction:column;gap:8px}
+.photos{display:flex;flex-wrap:wrap;gap:6px} .photos button{border:2px solid var(--line);border-radius:4px;padding:0;width:60px;height:60px;background:#fff;cursor:pointer;overflow:hidden}
+.photos button img{width:100%;height:100%;object-fit:contain} .photos button[aria-pressed=true]{border-color:var(--accent)}
+.spin{display:inline-block;width:.9em;height:.9em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.chlist{display:grid;gap:8px}
+.chrow{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;align-items:center}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:.7em 1.1em;border-radius:5px;z-index:50;max-width:min(92vw,560px);font-size:.9rem}
+.empty{color:var(--muted);font-size:.9rem;padding:20px;text-align:center;border:1px dashed var(--line);border-radius:6px}
+</style>
+</head>
+<body>
+<header class="bar"><div class="wrap">
+  <div class="logo"><b>DAWG GAMMIT<sup>™</sup></b><span>Videos</span></div>
+  <span class="stat" id="stats"></span>
+  <a class="btn" href="/admin">Shop admin</a>
+  <button class="btn" id="b-settings" type="button" aria-expanded="false">Settings</button>
+  <a class="btn" href="/admin/logout">Sign out</a>
+</div></header>
+
+<main class="wrap" style="padding-bottom:60px">
+  <div id="setup" class="note warn" hidden style="margin-top:20px"></div>
+
+  <!-- settings -->
+  <section class="panel" id="settings" hidden aria-labelledby="h-set">
+    <h2 id="h-set">Settings</h2>
+    <div class="grid2">
+      <div class="field">
+        <span class="lab">1 · Postiz API key</span>
+        <p class="hint">In Postiz: Settings → Public API → copy the key, paste it here and press Save.</p>
+        <div class="row"><input type="password" id="s-key" placeholder="Paste your Postiz API key" autocomplete="off" style="flex:1"><button class="btn" id="b-key" type="button">Save</button></div>
+        <span class="hint" id="s-keystate"></span>
+      </div>
+      <div class="field">
+        <span class="lab">2 · Channels</span>
+        <p class="hint">Connect TikTok, Instagram, Facebook, YouTube and Pinterest inside Postiz first, then press Load my channels.</p>
+        <div><button class="btn" id="b-ch" type="button">Load my channels</button></div>
+        <div class="chlist" id="chlist"></div>
+      </div>
+      <div class="field">
+        <span class="lab">3 · Posting times (UK time)</span>
+        <p class="hint">Each approved video goes to every channel at the next free time on this list.</p>
+        <input type="text" id="s-slots" placeholder="11:30, 15:30, 18:30, 21:00">
+        <label class="field"><span class="lab">Start posting from</span><input type="date" id="s-start"></label>
+      </div>
+      <div class="field">
+        <span class="lab">4 · Words on the videos and posts</span>
+        <label class="field"><span class="hint">Header line on the video</span><input type="text" id="s-header"></label>
+        <label class="field"><span class="hint">Tagline on the video</span><input type="text" id="s-tagline"></label>
+        <label class="row"><input type="checkbox" id="s-xmas"> Add Christmas gift hashtags</label>
+        <label class="row"><input type="checkbox" id="s-ai"> Label TikTok posts as AI-made (the voices are AI)</label>
+      </div>
+    </div>
+    <div class="row"><button class="btn btn-main" id="b-saveset" type="button">Save settings</button><span class="hint" id="s-next"></span></div>
+    <hr style="border:0;border-top:1px solid var(--line);width:100%">
+    <div class="field">
+      <span class="lab">Library: music, voices and backgrounds</span>
+      <p class="hint" id="lib-state"></p>
+      <div class="row"><label class="btn" for="f-pack">Upload library pack (.zip)</label><input type="file" id="f-pack" accept=".zip,application/zip" hidden></div>
+      <div class="row">
+        <input type="text" id="t-name" placeholder="New track name, e.g. Nobody Moves" style="flex:1;min-width:180px">
+        <input type="number" id="t-drop" placeholder="Beat drop (seconds)" min="0" step="0.01" style="width:170px">
+        <label class="btn" for="f-track">Add MP3 track</label><input type="file" id="f-track" accept=".mp3,audio/mpeg" hidden>
+      </div>
+      <p class="hint">The beat drop is when the hoodie should slam in. With a thumbnail, the music starts 3 seconds before it.</p>
+    </div>
+  </section>
+
+  <!-- make -->
+  <section class="panel" aria-labelledby="h-make">
+    <h2 id="h-make">Make videos</h2>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-src="shop" type="button">From your shop</button>
+      <button class="tab" role="tab" aria-selected="false" data-src="links" type="button">Paste KoolTeez links</button>
+    </div>
+    <div id="src-shop">
+      <div class="row" style="margin-bottom:8px"><button class="btn btn-sm" id="b-all" type="button">Select all</button><button class="btn btn-sm" id="b-none" type="button">Clear</button><span class="hint" id="picked"></span></div>
+      <div class="picker" id="picker"></div>
+    </div>
+    <div id="src-links" hidden><textarea id="links" placeholder="One KoolTeez product link per line"></textarea></div>
+    <div class="grid2">
+      <label class="field"><span class="lab">Videos per product</span><select id="o-per"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+      <label class="field"><span class="lab">Voice</span><select id="o-voice"><option value="rotate">Mix: Andray, Cowboy, Andray, Cowgirl</option><option value="andray">Andray (young male, product named)</option><option value="cowboy">Wanted Cowboy (generic)</option><option value="cowgirl">Wanted Female (generic)</option></select></label>
+      <label class="field"><span class="lab">Music</span><select id="o-track"></select></label>
+      <label class="field"><span class="lab">Background</span><select id="o-bg"></select></label>
+    </div>
+    <div class="row">
+      <label class="row"><input type="checkbox" id="o-price" checked> Show the price</label>
+      <label class="row"><input type="checkbox" id="o-auto" checked> Open with a photo of someone wearing it, when the shop has one</label>
+    </div>
+    <div class="row"><label class="btn" for="f-thumb">Add your own thumbnail</label><input type="file" id="f-thumb" accept="image/jpeg,image/png,image/webp" hidden><span class="hint" id="thumbstate">Optional. Opens the video for 3 s, closes it for 2 s, and is the cover.</span></div>
+    <div class="row"><button class="btn btn-main" id="b-make" type="button">Make videos</button><span class="hint" id="makestate"></span></div>
+  </section>
+
+  <!-- queue -->
+  <section class="panel" aria-labelledby="h-q">
+    <div class="row"><h2 id="h-q" style="margin-right:auto">Your videos</h2><button class="btn btn-sm" id="b-check" type="button">Check posting results</button></div>
+    <div class="tabs" role="tablist" id="filters"></div>
+    <div class="cards" id="cards"></div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let D = null, filter = 'review', src = 'shop', picked = new Set(), batchThumb = '', poll = null, openCaps = new Set();
+function toast(m, ms = 4200) { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(t._h); t._h = setTimeout(() => t.hidden = true, ms); }
+async function api(path, opt = {}) {
+  const r = await fetch(path, { ...opt, headers: { 'Content-Type': 'application/json', ...(opt.headers || {}) } });
+  const b = await r.json().catch(() => ({}));
+  if (r.status === 401) { location.href = '/admin/login'; throw new Error('Signed out'); }
+  if (!r.ok) throw new Error(b.error || 'Something went wrong');
+  return b;
+}
+const post = (p, b) => api(p, { method: 'POST', body: JSON.stringify(b) });
+const fmt = ms => new Date(ms).toLocaleString('en-GB', { timeZone: 'Europe/London', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const VOICE = { andray: 'Andray', cowboy: 'Cowboy', cowgirl: 'Cowgirl' };
+const CH = { tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube Shorts', pinterest: 'Pinterest' };
+
+function bucket(j) {
+  const r = j.render.state, s = (j.post || {}).state;
+  if (s === 'posted') return 'posted';
+  if (s === 'scheduled' || s === 'scheduling') return 'scheduled';
+  if (r === 'failed') return 'failed';
+  if (r === 'ready') return 'review';
+  return 'rendering';
+}
+async function load() {
+  try { D = await api('/admin/api/studio'); } catch (e) { toast(e.message); return; }
+  renderTop(); renderPicker(); renderQueue();
+  const busy = D.jobs.some(j => ['queued', 'rendering'].includes(j.render.state));
+  clearTimeout(poll); poll = setTimeout(load, busy ? 5000 : 30000);
+}
+function renderTop() {
+  const c = { review: 0, rendering: 0, failed: 0, scheduled: 0, posted: 0 }; D.jobs.forEach(j => c[bucket(j)]++);
+  $('#stats').innerHTML = `<b>${c.review}</b> to review · <b>${c.rendering}</b> rendering · <b>${c.scheduled}</b> scheduled · <b>${c.posted}</b> posted`;
+  const tabs = [['review', 'To review'], ['rendering', 'Rendering'], ['scheduled', 'Scheduled'], ['posted', 'Posted'], ['failed', 'Failed'], ['all', 'All']];
+  $('#filters').innerHTML = tabs.map(([k, l]) => `<button class="tab" role="tab" type="button" data-f="${k}" aria-selected="${filter === k}">${l} <b>${k === 'all' ? D.jobs.length : c[k]}</b></button>`).join('');
+  const S = D.settings, L = D.library, missing = [];
+  if (!S.hasKey) missing.push('add your Postiz API key');
+  else if (!Object.keys(S.channels || {}).length) missing.push('load your channels');
+  if (!L.tracks.length || !L.posters.length) missing.push('upload the library pack (music and backgrounds)');
+  $('#setup').hidden = !missing.length;
+  $('#setup').innerHTML = missing.length ? `Before videos can be made and posted: ${missing.join(', then ')}. Open <b>Settings</b>.` : '';
+  // options
+  const tr = L.tracks.map(t => `<option value="${esc(t.name)}">${esc(t.label)}</option>`).join('');
+  const bgs = L.posters.map(p => `<option value="${esc(p)}">${esc(p.replace(/-/g, ' '))}</option>`).join('');
+  if ($('#o-track').dataset.v !== tr) { $('#o-track').innerHTML = '<option value="rotate">Mix all tracks</option>' + tr; $('#o-track').dataset.v = tr; }
+  if ($('#o-bg').dataset.v !== bgs) { $('#o-bg').innerHTML = '<option value="rotate">Mix backgrounds</option>' + bgs.replace('value="blank-parchment"', 'value="blank-parchment" selected'); $('#o-bg').dataset.v = bgs; }
+  $('#lib-state').textContent = `${L.tracks.length} tracks (${L.tracks.map(t => t.label).join(', ') || 'none'}) · ${L.posters.length} backgrounds · ${L.vo.length} voice cuts` +
+    (L.pending ? ' · unpacking a new pack…' : '') + (L.status ? ` · ${L.status.message}` : '');
+  $('#s-next').textContent = D.nextSlot ? 'Next free posting time: ' + fmt(D.nextSlot) : 'No posting times set';
+  if (!$('#settings').dataset.filled) fillSettings();
+}
+function fillSettings() {
+  const S = D.settings; $('#settings').dataset.filled = 1;
+  $('#s-keystate').textContent = S.hasKey ? 'Key saved (ends ' + S.postizKey.slice(-4) + ').' : 'No key saved yet.';
+  $('#s-slots').value = (S.slots || []).join(', '); $('#s-start').value = S.startDate || '';
+  $('#s-header').value = S.header; $('#s-tagline').value = S.tagline; $('#s-xmas').checked = !!S.xmasTags; $('#s-ai').checked = !!S.aiLabel;
+  renderChannels(null);
+}
+function renderChannels(list) {
+  const S = D.settings; const box = $('#chlist');
+  const rows = Object.keys(CH).map(k => {
+    const opts = (list || []).filter(c => c.kind === k);
+    const cur = (S.channels || {})[k] || '';
+    let sel;
+    if (list) sel = `<select data-ch="${k}"><option value="">Not used</option>${opts.map(o => `<option value="${esc(o.id)}" ${(cur === o.id || (!cur && opts.length === 1)) ? 'selected' : ''}>${esc(o.name)}${o.disabled ? ' (disabled in Postiz)' : ''}</option>`).join('')}</select>`;
+    else sel = `<span class="hint">${cur ? 'Connected' : 'Not set'}</span>`;
+    return `<div class="chrow"><span>${CH[k]}</span>${sel}</div>`;
+  });
+  rows.push(`<div class="chrow"><span>Pinterest board</span><div class="row"><select id="s-board"><option value="${esc(S.pinterestBoard)}">${S.pinterestBoard ? 'Board ' + esc(S.pinterestBoard) : 'Choose after loading channels'}</option></select>${list ? '<button class="btn btn-sm" id="b-boards" type="button">Load boards</button>' : ''}</div></div>`);
+  box.innerHTML = rows.join('');
+}
+function renderPicker() {
+  const P = D.products; const box = $('#picker');
+  if (box.dataset.n == P.length) { updatePicked(); return; }
+  box.dataset.n = P.length;
+  box.innerHTML = P.length ? P.map(p => `<label class="pick ${picked.has(p.slug) ? 'on' : ''}" data-slug="${esc(p.slug)}"><input type="checkbox" ${picked.has(p.slug) ? 'checked' : ''}>
+    <img src="${esc(p.img || '')}" alt="" loading="lazy"><span>${esc(p.name)}</span><span class="hint">${esc(p.collection)} · ${esc(p.price)}</span></label>`).join('')
+    : '<div class="empty">No products on the live site yet. Add them in the Shop admin, or paste links instead.</div>';
+  updatePicked();
+}
+function updatePicked() {
+  const per = +$('#o-per').value; const n = src === 'shop' ? picked.size : $('#links').value.split('\n').filter(s => s.trim()).length;
+  $('#picked').textContent = picked.size ? `${picked.size} selected` : '';
+  $('#b-make').textContent = n ? `Make ${n * per} video${n * per === 1 ? '' : 's'}` : 'Make videos';
+  $('#b-make').disabled = !n;
+}
+function card(j) {
+  const r = j.render, b = bucket(j), p = j.post || {}; const used = r.used || {};
+  const media = r.state === 'ready'
+    ? `<video controls playsinline preload="none" poster="/admin/studio/file/${j.id}/cover.jpg?r=${j.rev}" src="/admin/studio/file/${j.id}/video.mp4?r=${j.rev}"></video>`
+    : r.state === 'failed' ? `<span>Render failed</span>` : `<span><span class="spin"></span><br>${esc(r.step || 'Waiting')}</span>`;
+  const chips = [`<span class="chip">${VOICE[j.voice] || j.voice}</span>`, `<span class="chip">♪ ${esc((D.library.tracks.find(t => t.name === j.track) || {}).label || j.track)}</span>`,
+    `<span class="chip">${esc((j.background || '').replace(/-/g, ' '))}</span>`, r.duration ? `<span class="chip">${r.duration} s</span>` : ''];
+  let status = '';
+  if (b === 'failed') status = `<div class="note bad">${esc(r.step)}</div>`;
+  if (b === 'scheduled') status = `<div class="note info">Scheduled for <b>${fmt(Date.parse(p.date))}</b> on ${(p.channels || []).map(c => CH[c]).join(', ')}</div>`;
+  if (b === 'posted') status = `<div class="note ok">Posted ${fmt(Date.parse(p.date))}</div>`;
+  if (p.error) status += `<div class="note bad">Posting failed: ${esc(p.error)}</div>`;
+  if (p.channelState) status += `<div class="chips">${p.channelState.map(c => `<span class="chip ${/error|fail/i.test(c.state) ? 'bad' : /publish/i.test(c.state) ? 'ok' : 'info'}">${esc(CH[c.channel] || c.channel)}: ${esc(c.state || '')}</span>`).join('')}</div>`;
+  const editable = !['scheduled', 'posted'].includes(b) && p.state !== 'scheduling';
+  const caps = j.captions || {};
+  const capFields = [['tiktok', 'TikTok caption'], ['instagram', 'Instagram caption'], ['facebook', 'Facebook text'], ['youtubeTitle', 'YouTube title'], ['youtube', 'YouTube description'], ['pinterestTitle', 'Pinterest title'], ['pinterest', 'Pinterest description']];
+  const photos = (r.photos || []).map(ph => ph.url);
+  const actions = b === 'review' ? `<div class="row">
+      <button class="btn btn-main" data-act="approve" data-id="${j.id}" type="button">Approve · post ${D.nextSlot ? fmt(D.nextSlot) : ''}</button>
+      <input type="datetime-local" data-when="${j.id}" aria-label="Or choose a time">
+      <button class="btn btn-sm" data-act="approve-at" data-id="${j.id}" type="button">Post at this time</button></div>`
+    : b === 'scheduled' && p.state === 'scheduled' ? `<div class="row"><button class="btn btn-sm" data-act="unschedule" data-id="${j.id}" type="button">Unschedule</button></div>`
+    : b === 'failed' ? `<div class="row"><button class="btn btn-main btn-sm" data-act="retry" data-id="${j.id}" type="button">Try again</button></div>` : '';
+  return `<article class="card" data-id="${j.id}">
+    <div class="media">${media}</div>
+    <div class="body">
+      <h3>${esc(j.name)} ${j.price ? `<span class="hint">· ${esc(j.price)}</span>` : ''}</h3>
+      <div class="chips">${chips.join('')}</div>
+      ${status}${actions}
+      <details ${openCaps.has(j.id) ? 'open' : ''} data-caps="${j.id}"><summary>Captions, hashtags and links</summary><div>
+        ${capFields.map(([k, l]) => `<label class="field"><span class="lab">${l}</span><textarea data-cap="${k}" ${k.endsWith('Title') ? 'style="min-height:44px"' : ''} ${editable ? '' : 'readonly'}>${esc(caps[k])}</textarea></label>`).join('')}
+        ${editable ? `<div class="row"><button class="btn btn-sm" data-act="savecaps" data-id="${j.id}" type="button">Save captions</button><button class="btn btn-sm" data-act="resetcaps" data-id="${j.id}" type="button">Write them again</button></div>` : ''}
+      </div></details>
+      ${editable ? `<details><summary>Change the video</summary><div>
+        <div class="grid2">
+          <label class="field"><span class="lab">Voice</span><select data-k="voice">${Object.entries(VOICE).map(([k, l]) => `<option value="${k}" ${j.voice === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+          <label class="field"><span class="lab">Music</span><select data-k="track">${D.library.tracks.map(t => `<option value="${esc(t.name)}" ${j.track === t.name ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}</select></label>
+          <label class="field"><span class="lab">Background</span><select data-k="background">${D.library.posters.map(x => `<option value="${esc(x)}" ${j.background === x ? 'selected' : ''}>${esc(x.replace(/-/g, ' '))}</option>`).join('')}</select></label>
+          <label class="field"><span class="lab">Name on the video</span><input type="text" data-k="name" value="${esc(j.name)}"></label>
+        </div>
+        ${photos.length ? `<span class="lab">Front photo</span><div class="photos" data-pk="front">${photos.map(u => `<button type="button" data-u="${esc(u)}" aria-pressed="${(j.front || used.front) === u}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join('')}</div>
+        <span class="lab">Back photo</span><div class="photos" data-pk="back"><button type="button" data-u="none" aria-pressed="${j.back === 'none'}" style="font-size:.7rem">None</button>${photos.map(u => `<button type="button" data-u="${esc(u)}" aria-pressed="${(j.back || used.back) === u}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
+        <div class="row"><label class="row"><input type="checkbox" data-k="showPrice" ${j.showPrice !== false ? 'checked' : ''}> Show the price</label>
+          <label class="row"><input type="checkbox" data-k="autoThumb" ${j.autoThumb !== false ? 'checked' : ''}> Open with a photo of someone wearing it</label></div>
+        <div class="row"><label class="btn btn-sm" for="th-${j.id}">${j.thumb ? 'Replace' : 'Add'} thumbnail</label><input type="file" id="th-${j.id}" data-thumb="${j.id}" accept="image/jpeg,image/png,image/webp" hidden>
+          ${j.thumb ? `<img src="/admin/studio/thumb/${j.thumb}" alt="" style="height:60px;border-radius:3px"><button class="btn btn-sm" data-act="nothumb" data-id="${j.id}" type="button">Remove thumbnail</button>` : ''}</div>
+        <div class="row"><button class="btn btn-main btn-sm" data-act="rerender" data-id="${j.id}" type="button">Save and render again</button><button class="btn btn-sm" data-act="delete" data-id="${j.id}" type="button">Delete video</button></div>
+      </div></details>` : ''}
+    </div></article>`;
+}
+function renderQueue() {
+  const list = D.jobs.filter(j => filter === 'all' || bucket(j) === filter);
+  if (filter === 'scheduled') list.sort((a, b) => Date.parse(a.post.date) - Date.parse(b.post.date));
+  const box = $('#cards');
+  // keep anything being edited or played: only redraw cards whose state changed
+  const want = list.map(j => j.id + ':' + j.rev + ':' + j.render.state + ':' + (j.render.step || '') + ':' + JSON.stringify(j.post || {}) + ':' + JSON.stringify(j.captions || {}) + ':' + (D.nextSlot || ''));
+  if (box.dataset.sig === want.join('|')) return;
+  const active = document.activeElement && box.contains(document.activeElement);
+  const playing = [...box.querySelectorAll('video')].some(v => !v.paused);
+  if ((active || playing) && box.dataset.sig) { clearTimeout(poll); poll = setTimeout(load, 8000); return; }
+  box.dataset.sig = want.join('|');
+  box.innerHTML = list.length ? list.map(card).join('') : `<div class="empty">${filter === 'review' ? 'Nothing to review. New videos appear here when they finish rendering.' : 'Nothing here yet.'}</div>`;
+}
+function readFile(f) { return new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = bad; r.readAsDataURL(f); }); }
+async function uploadThumb(file) {
+  if (file.size > 12e6) throw new Error('That image is over 12 MB. Use a smaller one.');
+  return (await post('/admin/api/studio/thumb', { dataUrl: await readFile(file) })).thumb;
+}
+// ----- events -----
+document.addEventListener('click', async e => {
+  const t = e.target.closest('button,[data-f],.tab'); if (!t) return;
+  try {
+    if (t.dataset.src) { src = t.dataset.src; document.querySelectorAll('[data-src]').forEach(x => x.setAttribute('aria-selected', x === t)); $('#src-shop').hidden = src !== 'shop'; $('#src-links').hidden = src !== 'links'; updatePicked(); return; }
+    if (t.dataset.f) { filter = t.dataset.f; $('#cards').dataset.sig = ''; renderTop(); renderQueue(); return; }
+    if (t.id === 'b-settings') { const s = $('#settings'); s.hidden = !s.hidden; t.setAttribute('aria-expanded', !s.hidden); if (!s.hidden) s.scrollIntoView({ behavior: 'smooth' }); return; }
+    if (t.id === 'b-all') { D.products.forEach(p => picked.add(p.slug)); $('#picker').dataset.n = ''; renderPicker(); return; }
+    if (t.id === 'b-none') { picked.clear(); $('#picker').dataset.n = ''; renderPicker(); return; }
+    if (t.id === 'b-key') { const v = $('#s-key').value.trim(); if (!v) return toast('Paste the key first.'); t.disabled = true; const r = await api('/admin/api/studio/settings', { method: 'PUT', body: JSON.stringify({ postizKey: v }) }); D.settings = r.settings; $('#s-key').value = ''; $('#s-keystate').textContent = 'Key saved (ends ' + r.settings.postizKey.slice(-4) + ').'; toast('Postiz key saved. Now press Load my channels.'); t.disabled = false; renderTop(); return; }
+    if (t.id === 'b-ch') { t.disabled = true; t.innerHTML = '<span class="spin"></span> Loading'; try { const r = await api('/admin/api/studio/postiz/channels'); renderChannels(r.channels); window._chs = r.channels; toast(r.channels.length ? 'Channels loaded. Check each one, then Save settings.' : 'Postiz has no channels yet. Connect them in Postiz first.'); } finally { t.disabled = false; t.textContent = 'Load my channels'; } return; }
+    if (t.id === 'b-boards') { const pid = ($('[data-ch="pinterest"]') || {}).value; if (!pid) return toast('Choose your Pinterest channel first.'); t.disabled = true; const r = await post('/admin/api/studio/postiz/boards', { id: pid }); $('#s-board').innerHTML = r.boards.map(b => `<option value="${esc(b.id)}" ${b.id === D.settings.pinterestBoard ? 'selected' : ''}>${esc(b.name)}</option>`).join('') || '<option value="">No boards found</option>'; t.disabled = false; return; }
+    if (t.id === 'b-saveset') {
+      const body = { slots: $('#s-slots').value.split(/[,\s]+/).filter(Boolean), startDate: $('#s-start').value, header: $('#s-header').value, tagline: $('#s-tagline').value, xmasTags: $('#s-xmas').checked, aiLabel: $('#s-ai').checked };
+      if (document.querySelector('[data-ch]')) { body.channels = {}; document.querySelectorAll('[data-ch]').forEach(s => body.channels[s.dataset.ch] = s.value); }
+      if ($('#s-board') && $('#s-board').value) body.pinterestBoard = $('#s-board').value;
+      const r = await api('/admin/api/studio/settings', { method: 'PUT', body: JSON.stringify(body) }); D.settings = r.settings; toast('Settings saved.'); load(); return;
+    }
+    if (t.id === 'b-make') {
+      const items = src === 'shop' ? [...picked].map(slug => ({ slug })) : $('#links').value.split('\n').map(s => s.trim()).filter(Boolean).map(url => ({ url }));
+      if (!items.length) return;
+      t.disabled = true; $('#makestate').innerHTML = '<span class="spin"></span> Adding to the queue…';
+      const r = await post('/admin/api/studio/create', { items, perProduct: +$('#o-per').value, voice: $('#o-voice').value, track: $('#o-track').value, background: $('#o-bg').value, showPrice: $('#o-price').checked, autoThumb: $('#o-auto').checked, thumb: batchThumb });
+      $('#makestate').textContent = `${r.made} video${r.made === 1 ? '' : 's'} added. Each takes about 2 minutes to render.` + (r.errors.length ? ' Problems: ' + r.errors.join('; ') : '');
+      t.disabled = false; picked.clear(); $('#picker').dataset.n = ''; filter = 'rendering'; $('#cards').dataset.sig = ''; load(); return;
+    }
+    if (t.id === 'b-check') { t.disabled = true; const r = await post('/admin/api/studio/check', {}); toast(r.checked ? `Updated ${r.checked} video${r.checked === 1 ? '' : 's'} from Postiz.` : 'Nothing scheduled to check yet.'); t.disabled = false; $('#cards').dataset.sig = ''; load(); return; }
+    const pk = t.closest('.photos'); if (pk) { pk.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === t)); return; }
+    const id = t.dataset.id, act = t.dataset.act; if (!act) return;
+    const cardEl = t.closest('.card');
+    if (act === 'approve' || act === 'approve-at') {
+      let date; if (act === 'approve-at') { const v = cardEl.querySelector(`[data-when="${id}"]`).value; if (!v) return toast('Choose a date and time first.'); date = new Date(v).toISOString(); }
+      t.disabled = true; t.innerHTML = '<span class="spin"></span> Uploading to Postiz…';
+      try { const r = await post('/admin/api/studio/approve', { id, date }); toast('Scheduled for ' + fmt(Date.parse(r.post.date)) + '.'); } catch (err) { toast(err.message, 9000); }
+      $('#cards').dataset.sig = ''; load(); return;
+    }
+    if (act === 'unschedule') { if (!confirmInline(t, 'Unschedule?')) return; await post('/admin/api/studio/unschedule', { id }); toast('Unscheduled. It is back in To review.'); $('#cards').dataset.sig = ''; load(); return; }
+    if (act === 'savecaps' || act === 'resetcaps') {
+      const captions = {}; cardEl.querySelectorAll('[data-cap]').forEach(x => captions[x.dataset.cap] = x.value);
+      await post('/admin/api/studio/job', { id, patch: act === 'resetcaps' ? { resetCaptions: true } : { captions } }); toast(act === 'resetcaps' ? 'Captions written again.' : 'Captions saved.'); $('#cards').dataset.sig = ''; load(); return;
+    }
+    if (act === 'delete') { if (!confirmInline(t, 'Delete it?')) return; await post('/admin/api/studio/delete', { id }); toast('Video deleted.'); $('#cards').dataset.sig = ''; load(); return; }
+    if (act === 'nothumb') { await post('/admin/api/studio/job', { id, patch: { thumb: '' } }); toast('Thumbnail removed. Rendering again.'); $('#cards').dataset.sig = ''; load(); return; }
+    if (act === 'retry') { await post('/admin/api/studio/job', { id, rerender: true, patch: {} }); toast('Rendering again.'); $('#cards').dataset.sig = ''; load(); return; }
+    if (act === 'rerender') {
+      const patch = {}; cardEl.querySelectorAll('[data-k]').forEach(x => patch[x.dataset.k] = x.type === 'checkbox' ? x.checked : x.value);
+      cardEl.querySelectorAll('.photos').forEach(pp => { const on = pp.querySelector('[aria-pressed=true]'); if (on) patch[pp.dataset.pk] = on.dataset.u; });
+      const captions = {}; cardEl.querySelectorAll('[data-cap]').forEach(x => captions[x.dataset.cap] = x.value); patch.captions = captions;
+      await post('/admin/api/studio/job', { id, patch, rerender: true }); toast('Saved. Rendering again (about 2 minutes).'); $('#cards').dataset.sig = ''; load(); return;
+    }
+  } catch (err) { toast(err.message, 8000); t.disabled = false; }
+});
+function confirmInline(btn, q) { if (btn.dataset.sure) return true; btn.dataset.sure = 1; const old = btn.textContent; btn.textContent = q + ' Press again'; setTimeout(() => { delete btn.dataset.sure; btn.textContent = old; }, 4000); return false; }
+document.addEventListener('toggle', e => { const d = e.target; if (d.dataset && d.dataset.caps) d.open ? openCaps.add(d.dataset.caps) : openCaps.delete(d.dataset.caps); }, true);
+$('#picker').addEventListener('change', e => { const l = e.target.closest('.pick'); if (!l) return; const s = l.dataset.slug; e.target.checked ? picked.add(s) : picked.delete(s); l.classList.toggle('on', e.target.checked); updatePicked(); });
+$('#o-per').addEventListener('change', updatePicked); $('#links').addEventListener('input', updatePicked);
+$('#f-thumb').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { $('#thumbstate').innerHTML = '<span class="spin"></span> Uploading…'; batchThumb = await uploadThumb(f); $('#thumbstate').innerHTML = `<img src="/admin/studio/thumb/${batchThumb}" alt="" style="height:48px;vertical-align:middle;border-radius:3px"> Used for every video in this batch. <button class="btn btn-sm" type="button" id="b-nothumb">Remove</button>`; } catch (err) { toast(err.message); $('#thumbstate').textContent = ''; } e.target.value = ''; });
+document.addEventListener('click', e => { if (e.target.id === 'b-nothumb') { batchThumb = ''; $('#thumbstate').textContent = 'Optional. Opens the video for 3 s, closes it for 2 s, and is the cover.'; } });
+document.addEventListener('change', async e => {
+  const id = e.target.dataset && e.target.dataset.thumb; if (!id) return; const f = e.target.files[0]; if (!f) return;
+  try { const th = await uploadThumb(f); await post('/admin/api/studio/job', { id, patch: { thumb: th } }); toast('Thumbnail added. Rendering again.'); $('#cards').dataset.sig = ''; load(); } catch (err) { toast(err.message); }
+});
+async function rawUpload(url, file, label) {
+  toast(label + '…', 60000);
+  const r = await fetch(url, { method: 'POST', body: file, headers: { 'Content-Type': 'application/octet-stream' } });
+  const b = await r.json().catch(() => ({})); if (!r.ok) throw new Error(b.error || 'Upload failed'); return b;
+}
+$('#f-pack').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { const b = await rawUpload('/admin/api/studio/library', f, 'Uploading the library pack'); toast(b.message); setTimeout(load, 6000); } catch (err) { toast(err.message, 8000); } e.target.value = ''; });
+$('#f-track').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; const name = $('#t-name').value.trim(); if (!name) { toast('Type a name for the track first.'); e.target.value = ''; return; }
+  try { await rawUpload(`/admin/api/studio/track?name=${encodeURIComponent(name)}&label=${encodeURIComponent(name)}&drop=${encodeURIComponent($('#t-drop').value || 0)}`, f, 'Uploading the track'); toast('Track added.'); $('#t-name').value = ''; $('#t-drop').value = ''; load(); } catch (err) { toast(err.message, 8000); } e.target.value = ''; });
+load();
+</script>
+</body></html>

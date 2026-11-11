@@ -188,6 +188,7 @@ function cleanMsg(b) {
 // ---------- pages ----------
 const LOGIN = fs.readFileSync(path.join(APP, 'login.html'), 'utf8');
 const ADMIN = fs.readFileSync(path.join(APP, 'admin.html'), 'utf8');
+const studio = require('./studio')({ DATA, json, send, readBody, readProduct, getStore: () => store });
 
 const server = http.createServer(async (req, res) => {
   if (req.method === 'HEAD') { req.method = 'GET'; const end = res.end.bind(res); res.write = () => true; res.end = (b, ...a) => end(); }   // link checkers and social previews ask with HEAD
@@ -241,6 +242,7 @@ const server = http.createServer(async (req, res) => {
     if (p === '/admin' || p.startsWith('/admin/')) {
       if (!authed(req)) return p.startsWith('/admin/api/') ? json(res, 401, { error: 'Signed out. Reload the page and sign in again.' }) : send(res, 303, '', 'text/plain', { Location: '/admin/login' });
       const H = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' };
+      if (p === '/admin/videos' || p.startsWith('/admin/studio/') || p.startsWith('/admin/api/studio')) { const r = await studio(req, res, p); if (r !== false) return; }
       if (p === '/admin' && req.method === 'GET') return send(res, 200, ADMIN, undefined, H);
       if (p === '/admin/preview' && req.method === 'GET') return send(res, 200, render(store.draft, { preview: true }), undefined, H);
       if (p.startsWith('/admin/api/') && req.method !== 'GET' && !/application\/json/.test(req.headers['content-type'] || '')) return json(res, 415, { error: 'Expected JSON' });

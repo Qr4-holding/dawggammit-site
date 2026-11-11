@@ -5,8 +5,11 @@
 #   REDIRECT_HOSTS = extra domains that permanently redirect to MAIN_HOST, e.g. "dawggamit.com, www.dawggamit.com"
 #   ADMIN_PASSWORD = the password for dawggammit.com/admin (sign-in is off when empty)
 #   SESSION_SECRET = a long random string that signs admin sign-ins
+#   ELEVENLABS_API_KEY = Robert's ElevenLabs key: the video studio records per-product voiceovers in the Andray voice (optional)
 # Shop data and uploaded photos live in the "data" volume, so they survive restarts and updates.
-# Updating the code: push to main, then restart the project (the container clones main on start).
+# Video studio (dawggammit.com/admin/videos): the "studio" service renders the promo videos. It shares the data volume
+# with the site; private music, voice cuts and backgrounds live there in studio-library/, uploaded through the admin.
+# Updating the code: push to main, then restart the project (the containers clone main on start).
 services:
   web:
     image: node:22-alpine
@@ -17,6 +20,7 @@ services:
       - DATA_DIR=/data
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
       - SESSION_SECRET=${SESSION_SECRET:-}
+      - ELEVENLABS_API_KEY_SET=${ELEVENLABS_API_KEY:+yes}
     volumes:
       - data:/data
     labels:
@@ -32,8 +36,33 @@ services:
     networks:
       - web
     restart: unless-stopped
+  studio:
+    # Chrome, Node and the system libraries the video renderer needs come with this image.
+    image: mcr.microsoft.com/playwright:v1.49.1-noble
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        apt-get update -qq
+        apt-get install -y -qq --no-install-recommends git ffmpeg python3-numpy python3-scipy python3-pil >/dev/null
+        rm -rf /src
+        git clone --depth 1 https://github.com/Qr4-holding/dawggammit-site.git /src
+        exec python3 -u /src/studio/worker.py
+    environment:
+      - DATA_DIR=/data
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY:-}
+    volumes:
+      - data:/data
+      - studio-cache:/root/.cache
+      - studio-npm:/root/.npm
+    cpus: 1.5
+    mem_limit: 3g
+    restart: unless-stopped
 networks:
   web:
     external: true
 volumes:
   data: {}
+  studio-cache: {}
+  studio-npm: {}
