@@ -112,7 +112,7 @@ def get_photos(job, wd):
     return found
 
 # ---------- voiceover ----------
-OPENERS = ["The new Dawg Gammit Western collection!", "Straight outta the Dawg Gammit Western collection!", "Outlaws, listen up! The new Dawg Gammit Western collection!"]
+OPENERS = ["The new Dawg Gammit Western collection!", "Fresh from the Dawg Gammit Western collection!"]   # short openers keep the voice at its natural pace
 
 def spoken(name):
     n = re.sub(r"(?i)dawg gammit(™)?", "", name).replace("T-shirt", "tee shirt").replace("&", "and")
