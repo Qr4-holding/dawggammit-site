@@ -123,8 +123,8 @@ def clip(i, s, d, z, inner):
     return f'<div id="{i}" class="clip full" data-start="{s:.2f}" data-duration="{d:.2f}" data-track-index="{z}" data-track-kind="graphics" style="z-index:{z}" data-layout-allow-occlusion data-layout-allow-overlap data-layout-allow-overflow>{inner}</div>'
 clips = [clip("page", 0, TOTAL, 30, page)]
 if a.thumb:
-    clips.append(clip("thumb", 0, T0 + 0.35, 40, '<img id="timg" class="bg" src="assets/thumb.jpg" alt="" />'))
-    clips.append(clip("thumbend", TE - 0.05, TOTAL - TE + 0.05, 41, '<img id="eimg" class="bg" src="assets/thumb.jpg" alt="" />'))
+    clips.append(clip("thumb", 0, T0, 40, '<img id="timg" class="bg" src="assets/thumb.jpg" alt="" />'))
+    clips.append(clip("thumbend", TE, TOTAL - TE, 41, '<img id="eimg" class="bg" src="assets/thumb.jpg" alt="" />'))
 # the DawgGammit.com button sits above everything from the first product frame to the end (over the closing thumbnail too)
 clips.append(clip("cta", T0, TOTAL - T0, 50, '<div id="pfu" class="url">DawgGammit.com</div>'))
 
@@ -141,9 +141,10 @@ def flip(out_, in_, at):
     ft(f'"{in_}"', "opacity: 0, rotationY: -80", 'opacity: 1, rotationY: 0, duration: 0.4, ease: "power3.out"', at)
 js('tl.set(["#pfw","#pbw"], { transformPerspective: 1800 }, 0);')
 if a.thumb:
-    ft('"#timg"', "opacity: 1, scale: 1", 'opacity: 0, scale: 1.08, duration: 0.35, ease: "power2.in"', T0)
-    js(f'tl.from("#pfw", {{ scale: 1.2, opacity: 0, duration: 0.4, ease: "power3.out" }}, {T0:.2f});')
-    ft('"#eimg"', "opacity: 0, scale: 1.06", 'opacity: 1, scale: 1, duration: 0.4, ease: "power2.out"', TE - 0.05)
+    # clean cuts in and out of the thumbnail: two garment prints must never show through each other
+    js(f'tl.fromTo("#timg", {{ scale: 1 }}, {{ scale: 1.05, duration: {T0:.2f}, ease: "none" }}, 0);')
+    js(f'tl.from("#pfw", {{ scale: 1.25, duration: 0.35, ease: "power3.out" }}, {T0:.2f});')
+    ft('"#eimg"', "scale: 1.08", 'scale: 1, duration: 0.5, ease: "power2.out"', TE)
     js(f'tl.from("#pfu", {{ opacity: 0, y: 30, duration: 0.35, ease: "power3.out" }}, {T0 + 0.15:.2f});')
 else:
     js('tl.fromTo("#pfw", { scale: 1.06 }, { scale: 1, duration: 0.6, ease: "power2.out" }, 0);')
