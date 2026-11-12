@@ -273,8 +273,9 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
       if (j.post && ['scheduled', 'posted', 'scheduling'].includes(j.post.state)) return json(res, 409, { error: 'This video is already scheduled. Unschedule it first to change it.' });
       const P = body.patch || {}; let rerender = false;
       if (P.captions && typeof P.captions === 'object') for (const k of Object.keys(j.captions)) if (typeof P.captions[k] === 'string') j.captions[k] = P.captions[k].slice(0, k.endsWith('Title') ? 100 : 2200);
-      for (const k of ['voice', 'track', 'background', 'front', 'back', 'thumb', 'name', 'price']) if (typeof P[k] === 'string' && P[k] !== j[k]) { j[k] = P[k].slice(0, 2000); rerender = true; }
+      for (const k of ['voice', 'track', 'background', 'front', 'back', 'thumb', 'thumbUrl', 'name', 'price']) if (typeof P[k] === 'string' && P[k] !== j[k]) { j[k] = P[k].slice(0, 2000); rerender = true; }
       for (const k of ['showPrice', 'autoThumb']) if (typeof P[k] === 'boolean' && P[k] !== j[k]) { j[k] = P[k]; rerender = true; }
+      if (typeof P.thumb === 'string' && P.thumb) j.thumbUrl = '';            // an upload replaces a KoolTeez cover
       if (P.resetCaptions) j.captions = captionsFor(j);
       if (rerender || body.rerender) { j.rev = (j.rev || 1) + 1; j.post = { state: 'review' }; }
       saveJob(j); return json(res, 200, { ok: true, rerender: rerender || !!body.rerender });

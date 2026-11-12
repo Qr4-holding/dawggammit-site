@@ -156,7 +156,7 @@ details>div{padding:0 .8em .8em;display:flex;flex-direction:column;gap:8px}
     </div>
     <div class="row">
       <label class="row"><input type="checkbox" id="o-price" checked> Show the price</label>
-      <label class="row"><input type="checkbox" id="o-auto" checked> Open with a photo of someone wearing it, when the shop has one</label>
+      <label class="row"><input type="checkbox" id="o-auto" checked> Use the KoolTeez photo of someone wearing it as the cover, when there is one</label>
     </div>
     <div class="row"><label class="btn" for="f-thumb">Add your own thumbnail</label><input type="file" id="f-thumb" accept="image/jpeg,image/png,image/webp" hidden><span class="hint" id="thumbstate">Optional. Opens the video for 3 s, closes it for 2 s, and is the cover.</span></div>
     <div class="row"><button class="btn btn-main" id="b-make" type="button">Make videos</button><span class="hint" id="makestate"></span></div>
@@ -276,18 +276,31 @@ function card(j) {
   const caps = j.captions || {};
   const capFields = [['tiktok', 'TikTok caption'], ['instagram', 'Instagram caption'], ['facebook', 'Facebook text'], ['youtubeTitle', 'YouTube title'], ['youtube', 'YouTube description'], ['pinterestTitle', 'Pinterest title'], ['pinterest', 'Pinterest description']];
   const photos = (r.photos || []).map(ph => ph.url);
+  const worn = (r.photos || []).filter(ph => ph.kind === 'photo').map(ph => ph.url);
+  const del = `<button class="btn btn-sm" data-act="delete" data-id="${j.id}" type="button">Delete</button>`;
   const actions = b === 'review' ? `<div class="row">
-      <button class="btn btn-main" data-act="approve" data-id="${j.id}" type="button">Approve · post ${D.nextSlot ? fmt(D.nextSlot) : ''}</button>
-      <input type="datetime-local" data-when="${j.id}" aria-label="Or choose a time">
+      <button class="btn btn-main" data-act="approve" data-id="${j.id}" type="button">Approve · post ${D.nextSlot ? fmt(D.nextSlot) : ''}</button>${del}</div>
+      <div class="row"><input type="datetime-local" data-when="${j.id}" aria-label="Or choose a time">
       <button class="btn btn-sm" data-act="approve-at" data-id="${j.id}" type="button">Post at this time</button></div>`
     : b === 'scheduled' && p.state === 'scheduled' ? `<div class="row"><button class="btn btn-sm" data-act="unschedule" data-id="${j.id}" type="button">Unschedule</button></div>`
-    : b === 'failed' ? `<div class="row"><button class="btn btn-main btn-sm" data-act="retry" data-id="${j.id}" type="button">Try again</button></div>` : '';
+    : b === 'failed' ? `<div class="row"><button class="btn btn-main btn-sm" data-act="retry" data-id="${j.id}" type="button">Try again</button>${del}</div>`
+    : b === 'rendering' ? `<div class="row">${del}</div>` : '';
+  // the cover: opens the video for 3 s, closes it for 2 s, and is the cover image on every channel
+  const curCover = j.thumb ? 'upload' : j.autoThumb === false ? 'none' : (j.thumbUrl || used.thumbUrl || (used.thumb === 'auto' ? worn[0] : '') || 'none');
+  const coverOpts = [`<button type="button" data-u="none" aria-pressed="${curCover === 'none'}" style="font-size:.7rem">None</button>`]
+    .concat(worn.map(u => `<button type="button" data-u="${esc(u)}" aria-pressed="${curCover === u}"><img src="${esc(u)}" alt="" loading="lazy"></button>`))
+    .concat(j.thumb ? [`<button type="button" data-u="upload" aria-pressed="${curCover === 'upload'}"><img src="/admin/studio/thumb/${j.thumb}" alt="Your upload"></button>`] : []);
+  const cover = editable && r.state !== 'queued' && r.state !== 'rendering' ? `<div class="field"><span class="lab">Cover photo (opens and closes the video)</span>
+      <div class="photos" data-pk="cover">${coverOpts.join('')}</div>
+      ${!worn.length && r.state === 'ready' ? '<span class="hint">KoolTeez has no photo of someone wearing this product.</span>' : ''}
+      <div class="row"><button class="btn btn-sm" data-act="cover" data-id="${j.id}" type="button">Use this cover · render again</button>
+      <label class="btn btn-sm" for="th-${j.id}">Upload your own</label><input type="file" id="th-${j.id}" data-thumb="${j.id}" accept="image/jpeg,image/png,image/webp" hidden></div></div>` : '';
   return `<article class="card" data-id="${j.id}">
     <div class="media">${media}</div>
     <div class="body">
       <h3>${esc(j.name)} ${j.price ? `<span class="hint">· ${esc(j.price)}</span>` : ''}</h3>
       <div class="chips">${chips.join('')}</div>
-      ${status}${actions}
+      ${status}${actions}${cover}
       <details ${openCaps.has(j.id) ? 'open' : ''} data-caps="${j.id}"><summary>Captions, hashtags and links</summary><div>
         ${capFields.map(([k, l]) => `<label class="field"><span class="lab">${l}</span><textarea data-cap="${k}" ${k.endsWith('Title') ? 'style="min-height:44px"' : ''} ${editable ? '' : 'readonly'}>${esc(caps[k])}</textarea></label>`).join('')}
         ${editable ? `<div class="row"><button class="btn btn-sm" data-act="savecaps" data-id="${j.id}" type="button">Save captions</button><button class="btn btn-sm" data-act="resetcaps" data-id="${j.id}" type="button">Write them again</button></div>` : ''}
@@ -301,11 +314,8 @@ function card(j) {
         </div>
         ${photos.length ? `<span class="lab">Front photo</span><div class="photos" data-pk="front">${photos.map(u => `<button type="button" data-u="${esc(u)}" aria-pressed="${(j.front || used.front) === u}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join('')}</div>
         <span class="lab">Back photo</span><div class="photos" data-pk="back"><button type="button" data-u="none" aria-pressed="${j.back === 'none'}" style="font-size:.7rem">None</button>${photos.map(u => `<button type="button" data-u="${esc(u)}" aria-pressed="${(j.back || used.back) === u}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
-        <div class="row"><label class="row"><input type="checkbox" data-k="showPrice" ${j.showPrice !== false ? 'checked' : ''}> Show the price</label>
-          <label class="row"><input type="checkbox" data-k="autoThumb" ${j.autoThumb !== false ? 'checked' : ''}> Open with a photo of someone wearing it</label></div>
-        <div class="row"><label class="btn btn-sm" for="th-${j.id}">${j.thumb ? 'Replace' : 'Add'} thumbnail</label><input type="file" id="th-${j.id}" data-thumb="${j.id}" accept="image/jpeg,image/png,image/webp" hidden>
-          ${j.thumb ? `<img src="/admin/studio/thumb/${j.thumb}" alt="" style="height:60px;border-radius:3px"><button class="btn btn-sm" data-act="nothumb" data-id="${j.id}" type="button">Remove thumbnail</button>` : ''}</div>
-        <div class="row"><button class="btn btn-main btn-sm" data-act="rerender" data-id="${j.id}" type="button">Save and render again</button><button class="btn btn-sm" data-act="delete" data-id="${j.id}" type="button">Delete video</button></div>
+        <div class="row"><label class="row"><input type="checkbox" data-k="showPrice" ${j.showPrice !== false ? 'checked' : ''}> Show the price</label></div>
+        <div class="row"><button class="btn btn-main btn-sm" data-act="rerender" data-id="${j.id}" type="button">Save and render again</button></div>
       </div></details>` : ''}
     </div></article>`;
 }
@@ -369,11 +379,17 @@ document.addEventListener('click', async e => {
       await post('/admin/api/studio/job', { id, patch: act === 'resetcaps' ? { resetCaptions: true } : { captions } }); toast(act === 'resetcaps' ? 'Captions written again.' : 'Captions saved.'); $('#cards').dataset.sig = ''; load(); return;
     }
     if (act === 'delete') { if (!confirmInline(t, 'Delete it?')) return; await post('/admin/api/studio/delete', { id }); toast('Video deleted.'); $('#cards').dataset.sig = ''; load(); return; }
+    if (act === 'cover') {
+      const on = cardEl.querySelector('[data-pk="cover"] [aria-pressed=true]'); if (!on) return toast('Pick a cover first.');
+      const u = on.dataset.u;
+      const patch = u === 'none' ? { thumb: '', thumbUrl: '', autoThumb: false } : u === 'upload' ? {} : { thumb: '', thumbUrl: u, autoThumb: true };
+      await post('/admin/api/studio/job', { id, patch, rerender: true }); toast('Cover changed. Rendering again (about 2 minutes).'); $('#cards').dataset.sig = ''; load(); return;
+    }
     if (act === 'nothumb') { await post('/admin/api/studio/job', { id, patch: { thumb: '' } }); toast('Thumbnail removed. Rendering again.'); $('#cards').dataset.sig = ''; load(); return; }
     if (act === 'retry') { await post('/admin/api/studio/job', { id, rerender: true, patch: {} }); toast('Rendering again.'); $('#cards').dataset.sig = ''; load(); return; }
     if (act === 'rerender') {
       const patch = {}; cardEl.querySelectorAll('[data-k]').forEach(x => patch[x.dataset.k] = x.type === 'checkbox' ? x.checked : x.value);
-      cardEl.querySelectorAll('.photos').forEach(pp => { const on = pp.querySelector('[aria-pressed=true]'); if (on) patch[pp.dataset.pk] = on.dataset.u; });
+      cardEl.querySelectorAll('.photos[data-pk="front"],.photos[data-pk="back"]').forEach(pp => { const on = pp.querySelector('[aria-pressed=true]'); if (on) patch[pp.dataset.pk] = on.dataset.u; });
       const captions = {}; cardEl.querySelectorAll('[data-cap]').forEach(x => captions[x.dataset.cap] = x.value); patch.captions = captions;
       await post('/admin/api/studio/job', { id, patch, rerender: true }); toast('Saved. Rendering again (about 2 minutes).'); $('#cards').dataset.sig = ''; load(); return;
     }

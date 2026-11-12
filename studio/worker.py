@@ -212,12 +212,15 @@ def render(job, jd, set_status):
     front = pick(job.get("front")) or (flats[0] if flats else photos[0])
     back = pick(job.get("back")) if job.get("back") else (next((p for p in flats if p is not front), None))
     if job.get("back") == "none": back = None
-    thumb = None
+    thumb, thumb_url = None, None
+    chosen = pick(job.get("thumbUrl")) if job.get("thumbUrl") else None
     if job.get("thumb"):
         t = DATA / "videos" / "thumbs" / job["thumb"]
         if t.exists(): thumb = str(t)
+    elif chosen and job.get("autoThumb", True):
+        thumb, thumb_url = chosen["file"], chosen["url"]  # the KoolTeez photo Robert picked as the cover
     elif job.get("autoThumb", True) and worn:
-        thumb = worn[0]["file"]                         # a photo of someone wearing it makes a strong cover
+        thumb, thumb_url = worn[0]["file"], worn[0]["url"]  # a photo of someone wearing it makes a strong cover
 
     voice = job.get("voice", "andray")
     extra, info = [], {}
@@ -268,7 +271,7 @@ def render(job, jd, set_status):
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(out), "-frames:v", "1", "-q:v", "2", str(cover)], check=True)
     shutil.rmtree(proj / "renders", ignore_errors=True)
     return {"duration": round(audio_len(out), 2), "bytes": out.stat().st_size, "photos": [{"url": p["url"], "kind": p["kind"]} for p in photos],
-            "used": {"front": front["url"], "back": back["url"] if back else None, "thumb": "upload" if job.get("thumb") else ("auto" if thumb else None),
+            "used": {"front": front["url"], "back": back["url"] if back else None, "thumb": "upload" if job.get("thumb") else ("auto" if thumb else None), "thumbUrl": thumb_url,
                      "track": tname, "trackStart": round(start, 2), "background": bg, "voice": voice}, **info}
 
 def main():
