@@ -243,7 +243,7 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
     if (p === '/admin/api/studio/create' && req.method === 'POST') {
       const lib = library(); const s = settings();
       const per = Math.max(1, Math.min(6, +body.perProduct || 1));
-      const voices = body.voice && body.voice !== 'rotate' ? [body.voice] : ['andray', 'cowboy', 'andray', 'cowgirl'];
+      const voices = body.voice && body.voice !== 'rotate' ? [body.voice] : ['aa-male', 'aa-female', 'andray', 'aa-male', 'cowboy'];
       const trackList = body.track && body.track !== 'rotate' ? [body.track] : lib.tracks.map(t => t.name);
       const bgList = body.background && body.background !== 'rotate' ? [body.background] : (lib.posters.length ? lib.posters : ['blank-parchment']);
       const shop = shopProducts(); const items = []; const errors = [];

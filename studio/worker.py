@@ -19,6 +19,10 @@ ENGINE = HERE / "engine" / "dgq.py"
 ASSETS = pathlib.Path("/tmp/dg-assets")
 EL_KEY = os.environ.get("ELEVENLABS_API_KEY", "").strip()
 ANDRAY = "FsK9b8Cv2pGkFUtfpOyM"          # ElevenLabs voice Robert approved on 11 Nov 2026
+# ElevenLabs voices that read a per-product script (Robert's own custom voices plus Andray)
+EL_VOICES = {"andray": ANDRAY,
+             "aa-male": "j1hglrPkA8bNHDKm2HTn",     # "African American Male - 2 Dawg Gammit signature"
+             "aa-female": "zhFfWFgv3X5Zw8f783SM"}   # "African American Young Female 1"
 UA = "DawgGammitSite/1.0 (+https://dawggammit.com)"
 HF = "hyperframes@0.8.206"
 MAX_LEN = 15.0
@@ -124,11 +128,11 @@ def andray_script(job):
             f"Featuring this {spoken(job['name'])}. [hyped] Dawg! Gammit! K-9s bark it all the time, y'all! "
             f"[upbeat] Get yours from Dawg Gammit dot com!")
 
-def eleven(text):
+def eleven(text, voice_id=ANDRAY):
     last = None
     for model in ("eleven_v3", "eleven_multilingual_v2"):
         body = {"text": text if model == "eleven_v3" else re.sub(r"\[[^\]]*\]\s*", "", text), "model_id": model}
-        req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{ANDRAY}/with-timestamps?output_format=mp3_44100_128",
+        req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/with-timestamps?output_format=mp3_44100_128",
                                      data=json.dumps(body).encode(), method="POST",
                                      headers={"xi-api-key": EL_KEY, "Content-Type": "application/json", "Accept": "application/json"})
         try:
@@ -144,9 +148,9 @@ def audio_len(f):
     out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(f)], capture_output=True, text=True).stdout
     return float(out.strip() or 0)
 
-def make_andray(job, wd):
+def make_andray(job, wd, voice_id=ANDRAY):
     text = andray_script(job)
-    audio, al, model = eleven(text)
+    audio, al, model = eleven(text, voice_id)
     (wd / "vo-raw.mp3").write_bytes(audio)
     chars = al["characters"]; st = al["character_start_times_seconds"]; en = al["character_end_times_seconds"]
     s = "".join(chars).lower()
@@ -224,10 +228,10 @@ def render(job, jd, set_status):
 
     voice = job.get("voice", "andray")
     extra, info = [], {}
-    if voice == "andray":
-        if not EL_KEY: raise RuntimeError("The Andray voice needs ELEVENLABS_API_KEY on the server. Choose Cowboy or Cowgirl, or add the key.")
+    if voice in EL_VOICES:
+        if not EL_KEY: raise RuntimeError("This voice needs ELEVENLABS_API_KEY on the server. Choose Cowboy or Cowgirl, or add the key.")
         set_status("rendering", "Recording the voiceover")
-        info = make_andray(job, wd)
+        info = make_andray(job, wd, EL_VOICES[voice])
         extra = ["--vo", str(wd / "vo.wav"), "--cues", str(wd / "cues.json")]
     else:
         extra = ["--voice", "cowgirl" if voice == "cowgirl" else "cowboy", "--length", job.get("length", "full")]

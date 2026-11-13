@@ -150,7 +150,7 @@ details>div{padding:0 .8em .8em;display:flex;flex-direction:column;gap:8px}
     <div id="src-links" hidden><textarea id="links" placeholder="One KoolTeez product link per line"></textarea></div>
     <div class="grid2">
       <label class="field"><span class="lab">Videos per product</span><select id="o-per"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
-      <label class="field"><span class="lab">Voice</span><select id="o-voice"><option value="rotate">Mix: Andray, Cowboy, Andray, Cowgirl</option><option value="andray">Andray (young male, product named)</option><option value="cowboy">Wanted Cowboy (generic)</option><option value="cowgirl">Wanted Female (generic)</option></select></label>
+      <label class="field"><span class="lab">Voice</span><select id="o-voice"><option value="rotate">Mix: your male and female voices, Andray, Cowboy</option><option value="aa-male">Dawg Gammit Male (your signature voice, product named)</option><option value="aa-female">Dawg Gammit Female (your young female voice, product named)</option><option value="andray">Andray (young male, product named)</option><option value="cowboy">Wanted Cowboy (generic)</option><option value="cowgirl">Wanted Female (generic)</option></select></label>
       <label class="field"><span class="lab">Music</span><select id="o-track"></select></label>
       <label class="field"><span class="lab">Background</span><select id="o-bg"></select></label>
     </div>
@@ -185,7 +185,7 @@ async function api(path, opt = {}) {
 }
 const post = (p, b) => api(p, { method: 'POST', body: JSON.stringify(b) });
 const fmt = ms => new Date(ms).toLocaleString('en-GB', { timeZone: 'Europe/London', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-const VOICE = { andray: 'Andray', cowboy: 'Cowboy', cowgirl: 'Cowgirl' };
+const VOICE = { 'aa-male': 'Dawg Gammit Male', 'aa-female': 'Dawg Gammit Female', andray: 'Andray', cowboy: 'Cowboy', cowgirl: 'Cowgirl' };
 const CH = { tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube Shorts', pinterest: 'Pinterest' };
 
 function bucket(j) {
