@@ -261,7 +261,7 @@ function updatePicked() {
 function card(j) {
   const r = j.render, b = bucket(j), p = j.post || {}; const used = r.used || {};
   const media = r.state === 'ready'
-    ? `<video controls playsinline preload="none" poster="/admin/studio/file/${j.id}/cover.jpg?r=${j.rev}" src="/admin/studio/file/${j.id}/video.mp4?r=${j.rev}"></video>`
+    ? `<video controls controlsList="nodownload" playsinline preload="none" poster="/admin/studio/file/${j.id}/cover.jpg?r=${j.rev}" src="/admin/studio/file/${j.id}/video.mp4?r=${j.rev}"></video>`
     : r.state === 'failed' ? `<span>Render failed</span>` : `<span><span class="spin"></span><br>${esc(r.step || 'Waiting')}</span>`;
   const chips = [`<span class="chip">${VOICE[j.voice] || j.voice}</span>`, `<span class="chip">♪ ${esc((D.library.tracks.find(t => t.name === j.track) || {}).label || j.track)}</span>`,
     `<span class="chip">${esc((j.background || '').replace(/-/g, ' '))}</span>`, r.duration ? `<span class="chip">${r.duration} s</span>` : ''];
@@ -277,12 +277,14 @@ function card(j) {
   const capFields = [['tiktok', 'TikTok caption'], ['instagram', 'Instagram caption'], ['facebook', 'Facebook text'], ['youtubeTitle', 'YouTube title'], ['youtube', 'YouTube description'], ['pinterestTitle', 'Pinterest title'], ['pinterest', 'Pinterest description']];
   const photos = (r.photos || []).map(ph => ph.url);
   const worn = (r.photos || []).filter(ph => ph.kind === 'photo').map(ph => ph.url);
-  const del = `<button class="btn btn-sm" data-act="delete" data-id="${j.id}" type="button">Delete</button>`;
+  const dl = r.state === 'ready' ? `<a class="btn btn-sm" href="/admin/studio/file/${j.id}/video-dl.mp4?r=${j.rev}" download title="Saves the video with its cover photo as the file picture">Download</a>` : '';
+  const del = dl + `<button class="btn btn-sm" data-act="delete" data-id="${j.id}" type="button">Delete</button>`;
   const actions = b === 'review' ? `<div class="row">
       <button class="btn btn-main" data-act="approve" data-id="${j.id}" type="button">Approve · post ${D.nextSlot ? fmt(D.nextSlot) : ''}</button>${del}</div>
       <div class="row"><input type="datetime-local" data-when="${j.id}" aria-label="Or choose a time">
       <button class="btn btn-sm" data-act="approve-at" data-id="${j.id}" type="button">Post at this time</button></div>`
-    : b === 'scheduled' && p.state === 'scheduled' ? `<div class="row"><button class="btn btn-sm" data-act="unschedule" data-id="${j.id}" type="button">Unschedule</button></div>`
+    : b === 'scheduled' && p.state === 'scheduled' ? `<div class="row"><button class="btn btn-sm" data-act="unschedule" data-id="${j.id}" type="button">Unschedule</button>${dl}</div>`
+    : b === 'scheduled' || b === 'posted' ? `<div class="row">${dl}</div>`
     : b === 'failed' ? `<div class="row"><button class="btn btn-main btn-sm" data-act="retry" data-id="${j.id}" type="button">Try again</button>${del}</div>`
     : b === 'rendering' ? `<div class="row">${del}</div>` : '';
   // the cover: opens the video for 3 s, closes it for 2 s, and is the cover image on every channel

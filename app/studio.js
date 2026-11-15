@@ -131,9 +131,10 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
     const C = { id: cover.id || crypto.randomBytes(4).toString('hex'), path: cover.path };
     const post = (ch, content, settingsObj, media = [V]) => ({ integration: { id: ids[ch] }, value: [{ content, image: media }], settings: settingsObj });
     const posts = [];
+    const VC = { ...V, thumbnail: C.path };   // Instagram Reels: use the cover photo as the Reel's cover
     if (ids.tiktok) posts.push(post('tiktok', c.tiktok, { title: j.name.slice(0, 90), privacy_level: 'PUBLIC_TO_EVERYONE', duet: true, stitch: true, comment: true,
       autoAddMusic: 'no', brand_content_toggle: false, brand_organic_toggle: true, video_made_with_ai: !!s.aiLabel, content_posting_method: 'DIRECT_POST' }));
-    if (ids.instagram) posts.push(post('instagram', c.instagram, { post_type: 'post', collaborators: [] }));
+    if (ids.instagram) posts.push(post('instagram', c.instagram, { post_type: 'post', collaborators: [] }, [VC]));
     if (ids.facebook) posts.push(post('facebook', c.facebook, { post_type: 'post', title: j.name }));
     if (ids.youtube) posts.push(post('youtube', c.youtube, { title: c.youtubeTitle.slice(0, 100), type: 'public', selfDeclaredMadeForKids: 'no', tags: ytTags(j), thumbnail: C }));
     if (ids.pinterest) posts.push(post('pinterest', c.pinterest, { board: s.pinterestBoard, title: c.pinterestTitle.slice(0, 100), link: j.url }, [V, C]));
@@ -143,10 +144,10 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
   const postIdsOf = res => (Array.isArray(res) ? res : (res && res.posts) || []).map(x => x && (x.postId || x.id)).filter(Boolean);
 
   // ---------- request handling ----------
-  function sendFile(req, res, file, type) {
+  function sendFile(req, res, file, type, extra) {
     if (!fs.existsSync(file)) return send(res, 404, 'Not found', 'text/plain');
     const size = fs.statSync(file).size; const m = /bytes=(\d*)-(\d*)/.exec(req.headers.range || '');
-    const H = { 'Content-Type': type, 'Accept-Ranges': 'bytes', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
+    const H = { 'Content-Type': type, 'Accept-Ranges': 'bytes', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...(extra || {}) };
     if (m) {
       const start = m[1] ? +m[1] : size - +m[2]; const end = m[1] && m[2] ? Math.min(+m[2], size - 1) : size - 1;
       if (start > end || start < 0) { res.writeHead(416, { 'Content-Range': `bytes */${size}` }); return res.end(); }
@@ -154,6 +155,12 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
       return fs.createReadStream(file, { start, end }).pipe(res);
     }
     res.writeHead(200, { ...H, 'Content-Length': size }); fs.createReadStream(file).pipe(res);
+  }
+  // download name, e.g. DawgGammit-doberman-outlaw-hoodie-1.mp4
+  function dlName(id) {
+    const j = readJob(id) || {}; const all = fs.readdirSync(JOBS).map(readJob).filter(x => x && !x.deleted && x.slug === j.slug).sort((a, b) => String(a.created).localeCompare(String(b.created)));
+    const n = Math.max(1, all.findIndex(x => x.id === id) + 1);
+    return `DawgGammit-${String(j.slug || 'video').replace(/[^a-z0-9-]/gi, '')}-${n}.mp4`;
   }
   function readRaw(req, limit) {
     return new Promise((resolve, reject) => { let n = 0; const c = []; req.on('data', d => { n += d.length; if (n > limit) { reject(new Error('That file is too large')); req.destroy(); } else c.push(d); }); req.on('end', () => resolve(Buffer.concat(c))); req.on('error', reject); });
@@ -184,8 +191,10 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
 
   return async function handle(req, res, p) {
     if (p === '/admin/videos' && req.method === 'GET') return send(res, 200, PAGE, undefined, { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
-    let m = p.match(/^\/admin\/studio\/file\/([a-z0-9]+)\/(video\.mp4|cover\.jpg)$/);
-    if (m && req.method === 'GET') { if (!okId(m[1])) return send(res, 404, 'Not found', 'text/plain'); return sendFile(req, res, path.join(jobDir(m[1]), m[2]), m[2].endsWith('.mp4') ? 'video/mp4' : 'image/jpeg'); }
+    let m = p.match(/^\/admin\/studio\/file\/([a-z0-9]+)\/(video\.mp4|video-dl\.mp4|cover\.jpg)$/);
+    if (m && req.method === 'GET') { if (!okId(m[1])) return send(res, 404, 'Not found', 'text/plain'); let f = path.join(jobDir(m[1]), m[2]); if (m[2] === 'video-dl.mp4' && !fs.existsSync(f)) f = path.join(jobDir(m[1]), 'video.mp4');
+      const extra = m[2] === 'video-dl.mp4' ? { 'Content-Disposition': `attachment; filename="${dlName(m[1])}"` } : undefined;
+      return sendFile(req, res, f, m[2].endsWith('.mp4') ? 'video/mp4' : 'image/jpeg', extra); }
     m = p.match(/^\/admin\/studio\/thumb\/([a-f0-9]{40}\.jpg)$/);
     if (m && req.method === 'GET') return sendFile(req, res, path.join(THUMBS, m[1]), 'image/jpeg');
     if (!p.startsWith('/admin/api/studio')) return false;
@@ -283,7 +292,7 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
     if (p === '/admin/api/studio/delete' && req.method === 'POST') {
       const j = readJob(body.id); if (!okId(body.id) || !j) return json(res, 404, { error: 'That video is no longer there.' });
       if (j.post && ['scheduled', 'scheduling'].includes(j.post.state)) return json(res, 409, { error: 'Unschedule this video before deleting it.' });
-      j.deleted = true; saveJob(j); for (const f of ['video.mp4', 'cover.jpg']) fs.rmSync(path.join(jobDir(j.id), f), { force: true }); fs.rmSync(path.join(jobDir(j.id), 'work'), { recursive: true, force: true });
+      j.deleted = true; saveJob(j); for (const f of ['video.mp4', 'video-dl.mp4', 'cover.jpg']) fs.rmSync(path.join(jobDir(j.id), f), { force: true }); fs.rmSync(path.join(jobDir(j.id), 'work'), { recursive: true, force: true });
       return json(res, 200, { ok: true });
     }
     if (p === '/admin/api/studio/approve' && req.method === 'POST') {

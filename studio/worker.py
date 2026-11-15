@@ -274,9 +274,29 @@ def render(job, jd, set_status):
     else:
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(out), "-frames:v", "1", "-q:v", "2", str(cover)], check=True)
     shutil.rmtree(proj / "renders", ignore_errors=True)
+    make_download(jd)
     return {"duration": round(audio_len(out), 2), "bytes": out.stat().st_size, "photos": [{"url": p["url"], "kind": p["kind"]} for p in photos],
             "used": {"front": front["url"], "back": back["url"] if back else None, "thumb": "upload" if job.get("thumb") else ("auto" if thumb else None), "thumbUrl": thumb_url,
                      "track": tname, "trackStart": round(start, 2), "background": bg, "voice": voice}, **info}
+
+def make_download(jd):
+    """video-dl.mp4: the same video with the cover photo stored inside it, so Windows,
+    phones and file browsers show the cover as the file's picture. The posted file stays clean."""
+    v, c, dl = jd / "video.mp4", jd / "cover.jpg", jd / "video-dl.mp4"
+    if not (v.exists() and c.exists()): return
+    tmp = jd / "video-dl.tmp.mp4"
+    r = subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-y", "-i", str(v), "-i", str(c), "-map", "0", "-map", "1", "-c", "copy",
+                        "-disposition:v:1", "attached_pic", "-movflags", "+faststart", str(tmp)], capture_output=True, text=True)
+    if r.returncode: log("download copy failed", jd.name, r.stderr[-300:]); tmp.unlink(missing_ok=True); return
+    tmp.replace(dl)
+
+def backfill_downloads():
+    for jd in JOBS.iterdir():
+        try:
+            dl, v, c = jd / "video-dl.mp4", jd / "video.mp4", jd / "cover.jpg"
+            if v.exists() and c.exists() and (not dl.exists() or dl.stat().st_mtime < max(v.stat().st_mtime, c.stat().st_mtime)):
+                make_download(jd)
+        except Exception: traceback.print_exc()
 
 def main():
     log("DAWG GAMMIT studio worker starting; ElevenLabs", "on" if EL_KEY else "off")
@@ -286,7 +306,7 @@ def main():
     subprocess.run(["npx", "--yes", HF, "--version"], capture_output=True)
     while True:
         try:
-            unpack_library(); build_assets()
+            unpack_library(); build_assets(); backfill_downloads()
             todo = []
             for jd in JOBS.iterdir():
                 job = rj(jd / "job.json"); st = rj(jd / "status.json", {}) or {}
