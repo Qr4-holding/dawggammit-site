@@ -123,6 +123,12 @@ details>div{padding:0 .8em .8em;display:flex;flex-direction:column;gap:8px}
         <label class="row"><input type="checkbox" id="s-ai"> Label TikTok posts as AI-made (the voices are AI)</label>
       </div>
     </div>
+    <div class="field" style="border-top:1px solid var(--line);padding-top:12px">
+      <span class="lab">5 · Autopilot and phone alerts</span>
+      <label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" id="s-auto" style="margin-top:.3em"><span><b>Autopilot:</b> schedule every finished video by itself into the next free posting time (one about every 8 minutes, to stay inside Postiz's hourly limit). Untick to approve each video yourself.</span></label>
+      <p class="hint">Alerts come to your phone through the free <b>ntfy</b> app (Google Play). Install it, press <b>+</b>, and subscribe to the alert name below. You get an alert when a video is scheduled, when it posts, and when anything fails.</p>
+      <div class="row"><input type="text" id="s-topic" placeholder="Alert name" style="flex:1;min-width:220px" autocomplete="off"><button class="btn btn-sm" id="b-topicnew" type="button">Make a private name</button><button class="btn btn-sm" id="b-testalert" type="button">Send test alert</button></div>
+    </div>
     <div class="row"><button class="btn btn-main" id="b-saveset" type="button">Save settings</button><span class="hint" id="s-next"></span></div>
     <hr style="border:0;border-top:1px solid var(--line);width:100%">
     <div class="field">
@@ -232,7 +238,7 @@ function fillSettings() {
   const S = D.settings; $('#settings').dataset.filled = 1;
   $('#s-keystate').textContent = S.hasKey ? 'Key saved (ends ' + S.postizKey.slice(-4) + ').' : 'No key saved yet.';
   $('#s-slots').value = (S.slots || []).join(', '); $('#s-start').value = S.startDate || '';
-  $('#s-header').value = S.header; $('#s-tagline').value = S.tagline; $('#s-xmas').checked = !!S.xmasTags; $('#s-ai').checked = !!S.aiLabel;
+  $('#s-header').value = S.header; $('#s-tagline').value = S.tagline; $('#s-xmas').checked = !!S.xmasTags; $('#s-ai').checked = !!S.aiLabel; $('#s-auto').checked = !!S.autoPost; $('#s-topic').value = S.alertTopic || '';
   renderChannels(null);
 }
 function renderChannels(list) {
@@ -273,7 +279,7 @@ function card(j) {
   let status = '';
   if (b === 'failed') status = `<div class="note bad">${esc(r.step)}</div>`;
   if (b === 'scheduled') status = `<div class="note info">Scheduled for <b>${fmt(Date.parse(p.date))}</b> on ${(p.channels || []).map(c => CH[c]).join(', ')}</div>`;
-  if (b === 'posted') status = `<div class="note ok">Posted ${fmt(Date.parse(p.date))}</div>`;
+  if (b === 'posted') status = p.partial ? `<div class="note warn">Posted ${fmt(Date.parse(p.date))}, but not on every platform: see below. Move the failed one to a new time in Postiz.</div>` : `<div class="note ok">Posted ${fmt(Date.parse(p.date))}</div>`;
   if (p.error) status += `<div class="note bad">Posting failed: ${esc(p.error)}</div>`;
   if (j.linkDead) status += `<div class="note bad">The KoolTeez page for this product was not found, so it cannot be posted with a buy link.</div>`;
   if (p.channelState) status += `<div class="chips">${p.channelState.map(c => `<span class="chip ${/error|fail/i.test(c.state) ? 'bad' : /publish/i.test(c.state) ? 'ok' : 'info'}">${esc(CH[c.channel] || c.channel)}: ${esc(c.state || '')}</span>`).join('')}</div>`;
@@ -357,11 +363,13 @@ document.addEventListener('click', async e => {
     if (t.id === 'b-key') { const v = $('#s-key').value.trim(); if (!v) return toast('Paste the key first.'); t.disabled = true; const r = await api('/admin/api/studio/settings', { method: 'PUT', body: JSON.stringify({ postizKey: v }) }); D.settings = r.settings; $('#s-key').value = ''; $('#s-keystate').textContent = 'Key saved (ends ' + r.settings.postizKey.slice(-4) + ').'; toast('Postiz key saved. Now press Load my channels.'); t.disabled = false; renderTop(); return; }
     if (t.id === 'b-ch') { t.disabled = true; t.innerHTML = '<span class="spin"></span> Loading'; try { const r = await api('/admin/api/studio/postiz/channels'); renderChannels(r.channels); window._chs = r.channels; toast(r.channels.length ? 'Channels loaded. Check each one, then Save settings.' : 'Postiz has no channels yet. Connect them in Postiz first.'); } finally { t.disabled = false; t.textContent = 'Load my channels'; } return; }
     if (t.id === 'b-boards') { const pid = ($('[data-ch="pinterest"]') || {}).value; if (!pid) return toast('Choose your Pinterest channel first.'); t.disabled = true; const r = await post('/admin/api/studio/postiz/boards', { id: pid }); $('#s-board').innerHTML = r.boards.map(b => `<option value="${esc(b.id)}" ${b.id === D.settings.pinterestBoard ? 'selected' : ''}>${esc(b.name)}</option>`).join('') || '<option value="">No boards found</option>'; t.disabled = false; return; }
+    if (t.id === 'b-topicnew') { const a = new Uint8Array(6); crypto.getRandomValues(a); $('#s-topic').value = 'dawggammit-' + [...a].map(x => x.toString(16).padStart(2, '0')).join(''); toast('Private name made. Press Save settings, then subscribe to it in the ntfy app.'); return; }
+    if (t.id === 'b-testalert') { try { await post('/admin/api/studio/test-alert', {}); flash('✓ Test alert sent. It should arrive on your phone within a few seconds.', 'ok'); } catch (err) { flash('✗ ' + err.message + ' (press Save settings first)', 'bad'); } return; }
     if (t.id === 'b-saveset') {
-      const body = { slots: $('#s-slots').value.split(/[,\s]+/).filter(Boolean), startDate: $('#s-start').value, header: $('#s-header').value, tagline: $('#s-tagline').value, xmasTags: $('#s-xmas').checked, aiLabel: $('#s-ai').checked };
+      const body = { slots: $('#s-slots').value.split(/[,\s]+/).filter(Boolean), startDate: $('#s-start').value, header: $('#s-header').value, tagline: $('#s-tagline').value, xmasTags: $('#s-xmas').checked, aiLabel: $('#s-ai').checked, autoPost: $('#s-auto').checked, alertTopic: $('#s-topic').value.trim() };
       if (document.querySelector('[data-ch]')) { body.channels = {}; document.querySelectorAll('[data-ch]').forEach(s => body.channels[s.dataset.ch] = s.value); }
       if ($('#s-board') && $('#s-board').value) body.pinterestBoard = $('#s-board').value;
-      const r = await api('/admin/api/studio/settings', { method: 'PUT', body: JSON.stringify(body) }); D.settings = r.settings; toast('Settings saved.'); load(); return;
+      const r = await api('/admin/api/studio/settings', { method: 'PUT', body: JSON.stringify(body) }); D.settings = r.settings; flash('✓ Settings saved.' + (r.settings.autoPost ? ' Autopilot is ON: finished videos will be scheduled by themselves.' : ' Autopilot is off: approve each video yourself.'), 'ok'); load(); return;
     }
     if (t.id === 'b-make') {
       const items = src === 'shop' ? [...picked].map(slug => ({ slug })) : $('#links').value.split('\n').map(s => s.trim()).filter(Boolean).map(url => ({ url }));

@@ -19,7 +19,7 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
 
   // ---------- settings ----------
   const DEFAULTS = { postizKey: '', channels: {}, pinterestBoard: '', slots: ['11:30', '15:30', '18:30', '21:00'], tz: 'Europe/London',
-    startDate: '', xmasTags: true, aiLabel: true, header: 'WESTERN COLLECTION', tagline: 'Nobody Moves, Nobody Gets Hurt' };
+    startDate: '', xmasTags: true, aiLabel: true, autoPost: false, alertTopic: '', header: 'WESTERN COLLECTION', tagline: 'Nobody Moves, Nobody Gets Hurt' };
   const settings = () => ({ ...DEFAULTS, ...rj(SETTINGS, {}) });
   const publicSettings = () => { const s = settings(); return { ...s, postizKey: s.postizKey ? '••••' + s.postizKey.slice(-4) : '', hasKey: !!s.postizKey }; };
 
@@ -106,7 +106,9 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
   const takenSlots = (except) => new Set(allJobs().filter(j => j.id !== except && j.post && ['scheduled', 'posted', 'scheduling'].includes(j.post.state)).map(j => Date.parse(j.post.date)));
 
   // ---------- Postiz ----------
+  const pzCalls = []; const pzRecent = () => { const now = Date.now(); while (pzCalls.length && now - pzCalls[0] > 3600e3) pzCalls.shift(); return pzCalls.length; };
   async function pz(pathname, opt = {}) {
+    pzCalls.push(Date.now());
     const key = settings().postizKey; if (!key) throw new Error('Add your Postiz API key in Settings first.');
     const r = await fetch(POSTIZ + pathname, { ...opt, headers: { Authorization: key, ...(opt.body && !(opt.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}), ...(opt.headers || {}) }, signal: AbortSignal.timeout(opt.timeout || 60000) });
     const text = await r.text(); let body; try { body = JSON.parse(text); } catch (e) { body = text; }
@@ -203,6 +205,71 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
     }
   } catch (e) { console.error('caption update', e.message); }
 
+  // ---------- reading back what Postiz did, alerts, and the autopilot ----------
+  async function checkPosts() {
+    const jobs = allJobs().filter(j => j.post && j.post.state === 'scheduled' && (j.post.ids || []).length && Date.parse(j.post.date) < Date.now() + 60e3);
+    if (!jobs.length) return 0;
+    const times = jobs.map(j => Date.parse(j.post.date));
+    const list = await pz('/public/v1/posts?' + new URLSearchParams({ startDate: new Date(Math.min(...times) - 864e5).toISOString(), endDate: new Date(Math.max(...times) + 864e5).toISOString() }));
+    const posts = (list && list.posts) || (Array.isArray(list) ? list : []);
+    let changed = 0;
+    for (const j of jobs) {
+      const mine = posts.filter(x => (j.post.ids || []).includes(x.id));
+      if (!mine.length) continue;
+      const fresh = readJob(j.id); if (!fresh) continue; const post = { ...fresh.post };
+      post.channelState = mine.map(x => ({ id: x.id, channel: channelFor((x.integration || {}).providerIdentifier) || (x.integration || {}).name, state: x.state || x.status, url: x.releaseURL || null, error: x.error || null }));
+      const done = c => /publish|done|sent/i.test(c.state || ''), bad = c => /error|fail/i.test(c.state || '');
+      if (post.channelState.every(c => done(c) || bad(c))) { post.state = 'posted'; post.partial = post.channelState.some(bad); }   // finished, even if one platform failed
+      // tell Robert once per channel when it publishes or fails
+      post.alerted = post.alerted || {};
+      const newly = post.channelState.filter(c => (done(c) || bad(c)) && !post.alerted[c.channel]);
+      if (newly.length) {
+        newly.forEach(c => { post.alerted[c.channel] = c.state; });
+        const ok = newly.filter(done).map(c => CHNAME[c.channel] || c.channel), ko = newly.filter(bad);
+        if (ok.length) await alert(`Posted: ${fresh.name}`, `Published on ${ok.join(', ')}.`, 'white_check_mark');
+        for (const c of ko) await alert(`FAILED on ${CHNAME[c.channel] || c.channel}: ${fresh.name}`, `${(c.error || 'No reason given').slice(0, 300)}\nOpen Postiz to move it to another time.`, 'x', 'high');
+      }
+      saveJob({ ...fresh, post }); changed++;
+    }
+    return changed;
+  }
+  const CHNAME = { tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', pinterest: 'Pinterest' };
+  async function alert(title, message, tag, priority) {   // push to Robert's phone through the free ntfy app
+    const topic = settings().alertTopic; if (!topic) return;
+    const ascii = t => String(t).replace(/™/g, '').replace(/[^\x20-\x7e]/g, '');
+    try { await fetch((process.env.NTFY_URL || 'https://ntfy.sh') + '/' + topic, { method: 'POST', body: message, headers: { Title: ascii(title), Tags: tag || '', Priority: priority || 'default', Click: 'https://dawggammit.com/admin/videos' }, signal: AbortSignal.timeout(15000) }); }
+    catch (e) { console.error('alert', e.message); }
+  }
+  // Autopilot: every few minutes, read back results; when switched on, schedule ONE ready video into the next free time.
+  // One at a time keeps under hosted Postiz's limit of about 30 requests an hour (each video takes 3).
+  const seenFailed = new Set();
+  let ticking = false;
+  async function tick() {
+    if (ticking) return; ticking = true;
+    try {
+      const s = settings(); if (!s.postizKey) return;
+      if (pzRecent() < 24) await checkPosts();
+      for (const j of allJobs()) if (j.render.state === 'failed' && !seenFailed.has(j.id + ':' + j.rev)) { seenFailed.add(j.id + ':' + j.rev); if (Date.now() - (j.render.at ? j.render.at * 1000 : Date.parse(j.created)) < 3 * 3600e3) await alert(`Video failed to render: ${j.name}`, String(j.render.step || '').slice(0, 300), 'warning'); }
+      if (!s.autoPost || pzRecent() > 20 || !Object.keys(s.channels || {}).length) return;
+      const ready = allJobs().filter(j => j.render.state === 'ready' && (!j.post || j.post.state === 'review') && !j.linkDead && !(j.post && j.post.triedAt && Date.now() - Date.parse(j.post.triedAt) < 3600e3))
+        .sort((a, b) => a.created.localeCompare(b.created));
+      if (!ready.length) return;
+      const j = readJob(ready[0].id); const date = nextSlot(takenSlots(j.id)); if (!date) return;
+      j.post = { state: 'scheduling', date: new Date(date).toISOString() }; saveJob(j);
+      try {
+        const r = await schedule(j, date);
+        j.post = { state: 'scheduled', date: new Date(date).toISOString(), at: new Date().toISOString(), channels: r.channels, ids: postIdsOf(r.res), raw: r.res, media: r.media, auto: true };
+        saveJob(j);
+        const left = ready.length - 1;
+        await alert(`Scheduled: ${j.name}`, `Posts ${new Date(date).toLocaleString('en-GB', { timeZone: s.tz, weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} UK time on ${r.channels.map(c => CHNAME[c]).join(', ')}.${left ? ` ${left} more waiting to be scheduled.` : ''}`, 'calendar', 'low');
+      } catch (e) {
+        j.post = { state: 'review', error: e.message, triedAt: new Date().toISOString() }; saveJob(j);
+        await alert(`Could not schedule: ${j.name}`, e.message.slice(0, 300), 'x', 'high');
+      }
+    } catch (e) { console.error('autopilot', e.message); } finally { ticking = false; }
+  }
+  const TICK = +process.env.STUDIO_TICK_MS || 8 * 60e3; setTimeout(tick, Math.min(60e3, TICK)); setInterval(tick, TICK);
+
   async function handle(req, res, p) {
     if (p === '/admin/videos' && req.method === 'GET') return send(res, 200, PAGE, undefined, { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
     let m = p.match(/^\/admin\/studio\/file\/([a-z0-9]+)\/(video\.mp4|video-dl\.mp4|cover\.jpg)$/);
@@ -244,7 +311,8 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
       if ('pinterestBoard' in b) s.pinterestBoard = String(b.pinterestBoard || '').replace(/\D/g, '').slice(0, 40);
       if (Array.isArray(b.slots)) s.slots = b.slots.map(String).filter(x => /^([01]\d|2[0-3]):[0-5]\d$/.test(x)).slice(0, 12);
       if ('startDate' in b) s.startDate = /^\d{4}-\d{2}-\d{2}$/.test(b.startDate || '') ? b.startDate : '';
-      for (const k of ['xmasTags', 'aiLabel']) if (k in b) s[k] = !!b[k];
+      for (const k of ['xmasTags', 'aiLabel', 'autoPost']) if (k in b) s[k] = !!b[k];
+      if ('alertTopic' in b) s.alertTopic = String(b.alertTopic || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
       for (const k of ['header', 'tagline']) if (typeof b[k] === 'string' && b[k].trim()) s[k] = b[k].trim().slice(0, 60);
       wj(SETTINGS, s); return json(res, 200, { settings: publicSettings(), nextSlot: nextSlot(takenSlots()) });
     }
@@ -343,23 +411,8 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
       if (errs.length && errs.length === (j.post.ids || []).length) return json(res, 400, { error: 'Postiz did not remove it: ' + errs[0] });
       j.post = { state: 'review' }; saveJob(j); return json(res, 200, { ok: true });
     }
-    if (p === '/admin/api/studio/check' && req.method === 'POST') {
-      // read back what Postiz did with each scheduled video
-      const jobs = allJobs().filter(j => j.post && j.post.state === 'scheduled' && (j.post.ids || []).length);
-      if (!jobs.length) return json(res, 200, { checked: 0 });
-      const times = jobs.map(j => Date.parse(j.post.date));
-      const list = await pz('/public/v1/posts?' + new URLSearchParams({ startDate: new Date(Math.min(...times) - 864e5).toISOString(), endDate: new Date(Math.max(...times) + 864e5).toISOString() }));
-      const posts = (list && list.posts) || (Array.isArray(list) ? list : []);
-      let changed = 0;
-      for (const j of jobs) {
-        const mine = posts.filter(x => (j.post.ids || []).includes(x.id));
-        if (!mine.length) continue;
-        j.post.channelState = mine.map(x => ({ id: x.id, channel: channelFor((x.integration || {}).providerIdentifier) || (x.integration || {}).name, state: x.state || x.status, url: x.releaseURL || null, error: x.error || null }));
-        if (mine.every(x => /publish|done|sent/i.test(x.state || x.status || ''))) j.post.state = 'posted';
-        saveJob(readJob(j.id) && { ...readJob(j.id), post: j.post }); changed++;
-      }
-      return json(res, 200, { checked: changed });
-    }
+    if (p === '/admin/api/studio/test-alert' && req.method === 'POST') { if (!settings().alertTopic) return json(res, 400, { error: 'Save an alert name first.' }); await alert('DAWG GAMMIT test alert', 'Alerts are working. You will get one when a video is scheduled, posted, or fails.', 'tada'); return json(res, 200, { ok: true }); }
+    if (p === '/admin/api/studio/check' && req.method === 'POST') return json(res, 200, { checked: await checkPosts() });
     return json(res, 404, { error: 'Not found' });
   };
   handle.jobInfo = id => { if (!okId(id)) return null; const j = readJob(id); return j ? { id: j.id, name: j.name, slug: j.slug, url: j.url } : null; };
