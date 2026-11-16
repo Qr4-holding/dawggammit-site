@@ -42,6 +42,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 select,input[type=text],input[type=password],input[type=number],input[type=date],input[type=datetime-local]{border:1.5px solid var(--line);border-radius:4px;padding:.5em .7em;background:var(--bg);min-width:0;max-width:100%}
 textarea{width:100%;min-height:96px;resize:vertical;border:1.5px solid var(--line);border-radius:4px;padding:10px;background:var(--bg);font-size:.88rem;line-height:1.45}
+#flash{margin:0 0 14px;padding:14px 16px;border-radius:6px;font-weight:700;font-size:1rem;display:flex;gap:12px;align-items:center;justify-content:space-between}#flash.ok{background:#1f7a3a;color:#fff}#flash.bad{background:#b3261e;color:#fff}#flash button{background:transparent;border:1px solid currentColor;color:inherit;border-radius:4px;padding:4px 10px;cursor:pointer;font:inherit;font-weight:600}
 .note{padding:.6em .8em;border-radius:4px;font-size:.88rem} .note.ok{background:var(--ok-bg);color:var(--ok)} .note.bad{background:var(--bad-bg);color:var(--bad)} .note.warn{background:var(--warn-bg);color:var(--warn)} .note.info{background:var(--info-bg);color:var(--info)}
 .tabs{display:flex;flex-wrap:wrap;gap:6px}
 .tab{border:1.5px solid var(--line);background:var(--bg);border-radius:999px;padding:.35em .9em;cursor:pointer;font-size:.85rem}
@@ -167,6 +168,7 @@ details>div{padding:0 .8em .8em;display:flex;flex-direction:column;gap:8px}
   <section class="panel" aria-labelledby="h-q">
     <div class="row"><h2 id="h-q" style="margin-right:auto">Your videos</h2><button class="btn btn-sm" id="b-check" type="button">Check posting results</button></div>
     <div class="tabs" role="tablist" id="filters"></div>
+    <div id="flash" role="status" aria-live="polite" hidden></div>
     <div class="cards" id="cards"></div>
   </section>
 </main>
@@ -176,6 +178,8 @@ details>div{padding:0 .8em .8em;display:flex;flex-direction:column;gap:8px}
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let D = null, filter = 'review', src = 'shop', picked = new Set(), batchThumb = '', poll = null, openCaps = new Set();
+function flash(m, kind) { const f = $('#flash'); f.className = kind; f.innerHTML = '<span></span><button type="button">OK</button>'; f.firstChild.textContent = m; f.hidden = false;
+  f.lastChild.onclick = () => { f.hidden = true; }; f.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 function toast(m, ms = 4200) { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(t._h); t._h = setTimeout(() => t.hidden = true, ms); }
 async function api(path, opt = {}) {
   const r = await fetch(path, { ...opt, headers: { 'Content-Type': 'application/json', ...(opt.headers || {}) } });
@@ -371,9 +375,13 @@ document.addEventListener('click', async e => {
     const id = t.dataset.id, act = t.dataset.act; if (!act) return;
     const cardEl = t.closest('.card');
     if (act === 'approve' || act === 'approve-at') {
-      let date; if (act === 'approve-at') { const v = cardEl.querySelector(`[data-when="${id}"]`).value; if (!v) return toast('Choose a date and time first.'); date = new Date(v).toISOString(); }
+      let date; if (act === 'approve-at') { const v = cardEl.querySelector(`[data-when="${id}"]`).value;
+        if (!v) return flash('✗ Not scheduled: choose the full date AND time in the box first (day, month, year, hours and minutes).', 'bad'); date = new Date(v).toISOString(); }
+      const nm = ((D.jobs || []).find(x => x.id === id) || {}).name || 'The video';
       t.disabled = true; t.innerHTML = '<span class="spin"></span> Uploading to Postiz…';
-      try { const r = await post('/admin/api/studio/approve', { id, date }); toast('Scheduled for ' + fmt(Date.parse(r.post.date)) + '.'); } catch (err) { toast(err.message, 9000); }
+      try { const r = await post('/admin/api/studio/approve', { id, date }); const chs = (r.post.channels || []).map(c => CH[c] || c).join(', ');
+        flash(`✓ Scheduled: ${nm} posts at ${fmt(Date.parse(r.post.date))} on ${chs}. It is now under Scheduled; it turns to Posted once the platforms confirm.`, 'ok'); }
+      catch (err) { flash('✗ Not scheduled: ' + err.message, 'bad'); }
       $('#cards').dataset.sig = ''; load(); return;
     }
     if (act === 'unschedule') { if (!confirmInline(t, 'Unschedule?')) return; await post('/admin/api/studio/unschedule', { id }); toast('Unscheduled. It is back in To review.'); $('#cards').dataset.sig = ''; load(); return; }
