@@ -283,13 +283,14 @@ function card(j) {
   const photos = (r.photos || []).map(ph => ph.url);
   const worn = (r.photos || []).filter(ph => ph.kind === 'photo').map(ph => ph.url);
   const dl = r.state === 'ready' ? `<a class="btn btn-sm" href="/admin/studio/file/${j.id}/video-dl.mp4?r=${j.rev}" download title="Saves the video with its cover photo as the file picture">Download</a>` : '';
+  const mk = r.state === 'ready' ? `<button class="btn btn-sm" data-act="copy" data-id="${j.id}" type="button" title="Makes a fresh copy in To review, where you can change the cover, music, voice or words">Make a new version</button>` : '';
   const del = dl + `<button class="btn btn-sm" data-act="delete" data-id="${j.id}" type="button">Delete</button>`;
   const actions = b === 'review' ? `<div class="row">
       <button class="btn btn-main" data-act="approve" data-id="${j.id}" type="button">Approve · post ${D.nextSlot ? fmt(D.nextSlot) : ''}</button>${del}</div>
       <div class="row"><input type="datetime-local" data-when="${j.id}" aria-label="Or choose a time">
       <button class="btn btn-sm" data-act="approve-at" data-id="${j.id}" type="button">Post at this time</button></div>`
-    : b === 'scheduled' && p.state === 'scheduled' ? `<div class="row"><button class="btn btn-sm" data-act="unschedule" data-id="${j.id}" type="button">Unschedule</button>${dl}</div>`
-    : b === 'scheduled' || b === 'posted' ? `<div class="row">${dl}</div>`
+    : b === 'scheduled' && p.state === 'scheduled' ? `<div class="row"><button class="btn btn-sm" data-act="unschedule" data-id="${j.id}" type="button">Unschedule</button>${dl}${mk}</div>`
+    : b === 'scheduled' || b === 'posted' ? `<div class="row">${dl}${mk}</div>`
     : b === 'failed' ? `<div class="row"><button class="btn btn-main btn-sm" data-act="retry" data-id="${j.id}" type="button">Try again</button>${del}</div>`
     : b === 'rendering' ? `<div class="row">${del}</div>` : '';
   // the cover: opens the video for 3 s, closes it for 2 s, and is the cover image on every channel
@@ -384,7 +385,8 @@ document.addEventListener('click', async e => {
       catch (err) { flash('✗ Not scheduled: ' + err.message, 'bad'); }
       $('#cards').dataset.sig = ''; load(); return;
     }
-    if (act === 'unschedule') { if (!confirmInline(t, 'Unschedule?')) return; await post('/admin/api/studio/unschedule', { id }); toast('Unscheduled. It is back in To review.'); $('#cards').dataset.sig = ''; load(); return; }
+    if (act === 'copy') { t.disabled = true; try { const r = await post('/admin/api/studio/copy', { id }); flash(`✓ New version of ${r.name} made. It is rendering now and will appear under To review in about 2 minutes, where you can change the cover, music, voice or captions before posting.`, 'ok'); } catch (err) { flash('✗ ' + err.message, 'bad'); } $('#cards').dataset.sig = ''; load(); return; }
+    if (act === 'unschedule') { if (!confirmInline(t, 'Unschedule?')) return; await post('/admin/api/studio/unschedule', { id }); flash('✓ Unscheduled. It is back under To review, where you can change it and post it again.', 'ok'); $('#cards').dataset.sig = ''; load(); return; }
     if (act === 'savecaps' || act === 'resetcaps') {
       const captions = {}; cardEl.querySelectorAll('[data-cap]').forEach(x => captions[x.dataset.cap] = x.value);
       await post('/admin/api/studio/job', { id, patch: act === 'resetcaps' ? { resetCaptions: true } : { captions } }); toast(act === 'resetcaps' ? 'Captions written again.' : 'Captions saved.'); $('#cards').dataset.sig = ''; load(); return;

@@ -328,6 +328,13 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
         return json(res, 400, { error: e.message });
       }
     }
+    if (p === '/admin/api/studio/copy' && req.method === 'POST') {   // a fresh version of a video: same product and choices, new opener, back in To review
+      const o = readJob(body.id); if (!okId(body.id) || !o) return json(res, 404, { error: 'That video is no longer there.' });
+      const seq = nextSeq();
+      const j = { ...o, id: crypto.randomBytes(6).toString('hex'), seq, rev: 1, created: new Date().toISOString(), copiedFrom: o.id, deleted: false, post: { state: 'review' } };
+      j.captions = captionsFor(j); saveJob(j);
+      return json(res, 200, { ok: true, id: j.id, name: j.name });
+    }
     if (p === '/admin/api/studio/unschedule' && req.method === 'POST') {
       const j = readJob(body.id); if (!okId(body.id) || !j) return json(res, 404, { error: 'That video is no longer there.' });
       if (!j.post || j.post.state !== 'scheduled') return json(res, 409, { error: 'This video is not scheduled.' });
