@@ -38,10 +38,10 @@ function render(state, opts = {}) {
   <span class="look-cap"><span class="look-name">${esc(p.name)}</span><span class="look-buy">${esc(p.price)} · Buy now ↗</span></span></a>`).join('\n');
 
   const shopHtml = items.map(it => {
-    const alt = safeUrl(it.alt) ? `<img class="alt" src="${esc(it.alt)}" alt="" loading="lazy" />` : '';
+    const alt = safeUrl(it.alt) ? `<img class="alt${it.mainPhoto ? ' plain' : ''}" src="${esc(it.alt)}" alt="" loading="lazy" />` : '';
     return `<article class="card" data-col="${esc(it.col)}" data-line="${slugify(it.line)}">
   <a class="card-img" href="${esc(it.url)}" target="_blank" rel="noopener" aria-label="Buy the ${esc(it.name)}">
-    <img class="main" src="${esc(safeUrl(it.img))}" alt="${esc(it.name)}" loading="lazy" />${alt}
+    <img class="main${it.mainPhoto ? ' photo' : ''}" src="${esc(safeUrl(it.img))}" alt="${esc(it.name)}" loading="lazy" />${alt}
     <span class="tag">${esc(it.colName)}</span></a>
   <div class="card-body"><h3>${esc(it.name)}</h3>
     <div class="card-row"><span class="price">${esc(it.price)}</span>

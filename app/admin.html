@@ -97,6 +97,7 @@ select,input[type=text]{border:1.5px solid var(--line);border-radius:4px;padding
 /* preview */
 .pv{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
 .pv a{display:flex;flex-direction:column;background:#2a1709;color:#f1dfba;border-radius:4px;overflow:hidden;text-decoration:none;font-size:.72rem}
+.refresh{border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:0 0 16px;display:flex;flex-direction:column;gap:6px}
 .pv img{aspect-ratio:4/5;width:100%;max-width:100%;object-fit:contain;background:#ffffff;padding:6%}
 .pv span{padding:6px 7px;font-family:var(--label);letter-spacing:.02em;line-height:1.25}
 .pv em{font-style:normal;color:#e2b77a}
@@ -191,6 +192,11 @@ a.btn{text-decoration:none;color:inherit;display:inline-block}
         <button class="btn" id="b-clear" type="button">Clear</button>
         <button class="btn btn-main" id="b-add" type="button">Add selected</button>
       </div>
+    </div>
+    <div class="refresh">
+      <h3 class="lab" style="margin:0">Changed photos on KoolTeez?</h3>
+      <p class="hint">Reads every product on DawgGammit.com from KoolTeez again. Each product's shop picture becomes its first photo on KoolTeez (the thumbnail you set in Fourthwall); if that is a model photo, the plain product shot shows when a visitor points at it. Names, prices, order and hidden products stay as they are. It saves as a draft: check the preview, then press <strong>Publish</strong>.</p>
+      <div class="row"><button class="btn" id="b-refresh" type="button">Refresh photos from KoolTeez</button><span class="hint" id="refresh-note"></span></div>
     </div>
     <p class="how">The server opens each KoolTeez page and reads the name, price and photos. It sorts the photos itself: the plain product shot goes in the shop grid, and a photo of someone wearing it (if there is one) is offered for the lookbook. A collection link brings in every product in it; allow about a second per product.</p>
   </section>
@@ -342,6 +348,18 @@ a.btn{text-decoration:none;color:inherit;display:inline-block}
   $('review').addEventListener('input', function(e){ var i = e.target.dataset.i; if (i==null) return;
     if (e.target.type==='text') review[i].name = e.target.value;
     else { review[i][e.target.dataset.k] = e.target.checked; if (e.target.dataset.k==='pick') renderReview(); } });
+  $('b-refresh').onclick = function(){
+    var b = this; b.disabled = true; $('refresh-note').textContent = 'Reading every product page on KoolTeez. Allow about a second per product.';
+    api('POST', '/admin/api/refresh-photos', {}).then(function(d){
+      state.cols = d.draft.cols || []; state.look = d.draft.look || []; state.extraLines = d.draft.extraLines || [];
+      if (!col(state.sel)) state.sel = state.cols[0] && state.cols[0].id;
+      render(); setStatus(d.dirty ? 'Saved · not published yet' : 'Saved · matches the live site', d.dirty ? '' : 'ok');
+      $('refresh-note').textContent = d.changed + ' of ' + d.checked + ' products have new photos.' +
+        (d.failed.length ? ' ' + d.failed.length + ' could not be read (left as they were): ' + d.failed.map(function(f){return f.slug}).join(', ') + '.' : '') +
+        (d.changed ? ' Check the preview, then press Publish.' : '');
+    }).catch(function(e){ $('refresh-note').textContent = 'Could not refresh: ' + e.message; })
+      .then(function(){ b.disabled = false; });
+  };
   $('b-clear').onclick = function(){ review = []; renderReview(); $('fetch-note').textContent = ''; };
   $('b-add').onclick = function(){
     var t = $('target').value, c;

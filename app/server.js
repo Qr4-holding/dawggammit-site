@@ -112,7 +112,9 @@ async function readProduct(slug) {
   const photo = pick('photo') || null;
   const alt = photo || photos.find(p => p !== img) || null;
   const name = cleanName(title);
-  return { slug, name, price, url, img, alt, photo, line: lineOf(name), visible: true };
+  // KoolTeez's own first photo (the shop thumbnail Robert sets in Fourthwall), used by "Refresh photos"
+  const first = photos[0] || null, firstKind = kinds[0] || null, plain = pick('cut') || pick('flat') || null;
+  return { slug, name, price, url, img, alt, photo, line: lineOf(name), visible: true, first, firstKind, plain };
 }
 async function readLinks(lines) {
   const out = []; const slugs = []; let collection = null;
@@ -135,6 +137,34 @@ async function readLinks(lines) {
     out.push(...batch);
   }
   return { results: out, collection };
+}
+
+// ---------- refreshing every product's photos from KoolTeez ----------
+// The shop picture becomes the product's first photo on KoolTeez (its thumbnail there);
+// when that is a model photo, the plain product shot shows on hover instead.
+// Names, prices, order, product lines and hidden products are left as they are.
+async function refreshPhotos(state) {
+  const items = state.cols.flatMap(c => c.items);
+  const slugs = [...new Set(items.map(i => i.slug).filter(Boolean))];
+  const found = {}, failed = [];
+  for (let i = 0; i < slugs.length; i += 4) {
+    const batch = await Promise.all(slugs.slice(i, i + 4).map(s => readProduct(s).then(r => [s, r]).catch(e => [s, null, e.message])));
+    batch.forEach(([s, r, msg]) => { if (r && r.first) found[s] = r; else failed.push({ slug: s, message: msg || 'No photos on the page' }); });
+  }
+  let changed = 0;
+  items.forEach(it => {
+    const r = found[it.slug]; if (!r) return;
+    const before = JSON.stringify([it.img, it.alt, it.photo, it.mainPhoto]);
+    const oldPhoto = it.photo;
+    it.mainPhoto = r.firstKind === 'photo';
+    it.img = r.first;
+    it.alt = it.mainPhoto ? r.plain : r.photo;
+    it.photo = it.mainPhoto ? r.first : r.photo;
+    // lookbook photos taken from KoolTeez for this product follow the new model photo
+    (state.look || []).forEach(l => { if (l.source === 'koolteez' && l.slug === it.slug && it.photo && l.src === oldPhoto) l.src = it.photo; });
+    if (JSON.stringify([it.img, it.alt, it.photo, it.mainPhoto]) !== before) changed++;
+  });
+  return { changed, checked: slugs.length - failed.length, failed };
 }
 
 // ---------- uploads ----------
@@ -160,7 +190,7 @@ function cleanState(s) {
       items: (c.items || []).slice(0, 500).map(i => ({
         slug: str(i.slug, 200).replace(/[^a-z0-9-]/g, ''), name: str(i.name, 120), price: str(i.price, 20),
         url: /^https:\/\/koolteez\.com\//.test(i.url || '') ? str(i.url, 300) : 'https://koolteez.com/products/' + str(i.slug, 200).replace(/[^a-z0-9-]/g, ''),
-        img: okUrl(i.img), alt: okUrl(i.alt), photo: okUrl(i.photo), visible: i.visible !== false, line: str(i.line, 40) || lineOf(i.name),
+        img: okUrl(i.img), alt: okUrl(i.alt), photo: okUrl(i.photo), mainPhoto: !!i.mainPhoto, visible: i.visible !== false, line: str(i.line, 40) || lineOf(i.name),
       })),
     })),
     look: s.look.slice(0, 24).map(l => ({ src: okUrl(l.src), source: l.source === 'upload' ? 'upload' : 'koolteez', slug: str(l.slug, 200).replace(/[^a-z0-9-]/g, '') })).filter(l => l.src),
@@ -258,6 +288,11 @@ const server = http.createServer(async (req, res) => {
       if (p === '/admin/api/fetch' && req.method === 'POST') {
         const body = JSON.parse(await readBody(req, 1e5));
         return json(res, 200, await readLinks(Array.isArray(body.urls) ? body.urls : []));
+      }
+      if (p === '/admin/api/refresh-photos' && req.method === 'POST') {
+        const draft = clone(store.draft); const r = await refreshPhotos(draft);
+        store.draft = cleanState(draft); store.savedAt = new Date().toISOString(); writeStore(store);
+        return json(res, 200, { ...r, draft: store.draft, dirty: JSON.stringify(store.draft) !== JSON.stringify(store.published) });
       }
       if (p === '/admin/api/upload' && req.method === 'POST') {
         const body = JSON.parse(await readBody(req));
