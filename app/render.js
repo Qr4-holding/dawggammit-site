@@ -33,13 +33,13 @@ function render(state, opts = {}) {
   items.forEach(i => { if (!bySlug[i.slug]) bySlug[i.slug] = i; });
 
   const look = (state.look || []).map(l => ({ l, p: bySlug[l.slug] })).filter(x => x.p && safeUrl(x.l.src)).slice(0, 12);
-  const lookHtml = look.map(({ l, p }) => `<a class="look" href="${esc(p.url)}" target="_blank" rel="noopener">
+  const lookHtml = look.map(({ l, p }) => `<a class="look" data-slug="${esc(p.slug)}" href="${esc(p.url)}" target="_blank" rel="noopener">
   <img src="${esc(safeUrl(l.src))}" alt="Model wearing the ${esc(p.name)}" loading="lazy" />
   <span class="look-cap"><span class="look-name">${esc(p.name)}</span><span class="look-buy">${esc(p.price)} · Buy now ↗</span></span></a>`).join('\n');
 
   const shopHtml = items.map(it => {
     const alt = safeUrl(it.alt) ? `<img class="alt${it.mainPhoto ? ' plain' : ''}" src="${esc(it.alt)}" alt="" loading="lazy" />` : '';
-    return `<article class="card" data-col="${esc(it.col)}" data-line="${slugify(it.line)}">
+    return `<article class="card" data-slug="${esc(it.slug)}" data-col="${esc(it.col)}" data-line="${slugify(it.line)}">
   <a class="card-img" href="${esc(it.url)}" target="_blank" rel="noopener" aria-label="Buy the ${esc(it.name)}">
     <img class="main${it.mainPhoto ? ' photo' : ''}" src="${esc(safeUrl(it.img))}" alt="${esc(it.name)}" loading="lazy" />${alt}
     <span class="tag">${esc(it.colName)}</span></a>

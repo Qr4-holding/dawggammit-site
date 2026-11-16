@@ -219,6 +219,7 @@ function cleanMsg(b) {
 const LOGIN = fs.readFileSync(path.join(APP, 'login.html'), 'utf8');
 const ADMIN = fs.readFileSync(path.join(APP, 'admin.html'), 'utf8');
 const studio = require('./studio')({ DATA, json, send, readBody, readProduct, getStore: () => store });
+const stats = require('./stats')({ DATA, SECRET, send, readBody, clientIp });
 
 const server = http.createServer(async (req, res) => {
   if (req.method === 'HEAD') { req.method = 'GET'; const end = res.end.bind(res); res.write = () => true; res.end = (b, ...a) => end(); }   // link checkers and social previews ask with HEAD
@@ -238,6 +239,8 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, fs.readFileSync(path.join(UPLOADS, f)), 'image/jpeg', { 'Cache-Control': 'public, max-age=31536000, immutable' });
     }
     if (p === '/healthz') return send(res, 200, 'ok', 'text/plain');
+    if (p === '/api/hit' && req.method === 'POST') return stats.hit(req, res);
+    { const g = p.match(/^\/go\/([a-z0-9]{6,24})\/([a-z]+)\/?$/); if (g && req.method === 'GET') return stats.go(req, res, studio.jobInfo, g[1], g[2]); }
     if (p === '/api/contact' && req.method === 'POST') {
       try {
         if (!/application\/json/.test(req.headers['content-type'] || '')) return json(res, 415, { error: 'Expected JSON' });
@@ -274,6 +277,10 @@ const server = http.createServer(async (req, res) => {
       const H = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' };
       if (p === '/admin/videos' || p.startsWith('/admin/studio/') || p.startsWith('/admin/api/studio')) { const r = await studio(req, res, p); if (r !== false) return; }
       if (p === '/admin' && req.method === 'GET') return send(res, 200, ADMIN, undefined, H);
+      if (p === '/admin/stats' && req.method === 'GET') {
+        const names = {}; (store.published.cols || []).forEach(c => (c.items || []).forEach(i => { names[i.slug] = i.name; }));
+        return send(res, 200, stats.page(url.searchParams.get('d') || '7', names, studio.jobInfo), undefined, H);
+      }
       if (p === '/admin/preview' && req.method === 'GET') return send(res, 200, render(store.draft, { preview: true }), undefined, H);
       if (p.startsWith('/admin/api/') && req.method !== 'GET' && !/application\/json/.test(req.headers['content-type'] || '')) return json(res, 415, { error: 'Expected JSON' });
       if (p === '/admin/api/state' && req.method === 'GET') return json(res, 200, { draft: store.draft, publishedAt: store.publishedAt, savedAt: store.savedAt, dirty: JSON.stringify(store.draft) !== JSON.stringify(store.published) });

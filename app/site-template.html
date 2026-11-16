@@ -497,5 +497,20 @@ document.addEventListener('error',function(e){var i=e.target;if(!i||i.tagName!==
 })();
 </script>
 
+<script>
+/* key numbers: counted on DawgGammit.com's own server, no cookies */
+(function(){
+  if (location.pathname !== '/' && location.pathname !== '/index.html') return;   // not the admin preview
+  function send(o){ try { var b = JSON.stringify(o);
+    if (navigator.sendBeacon) navigator.sendBeacon('/api/hit', new Blob([b], { type: 'application/json' }));
+    else fetch('/api/hit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: b, keepalive: true }); } catch (e) {} }
+  var q = new URLSearchParams(location.search);
+  send({ t: 'view', from: q.get('from') || q.get('utm_source') || '', ref: document.referrer || '' });
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href*="koolteez.com"]'); if (!a) return;
+    var s = a.closest('[data-slug]'); send({ t: a.classList.contains('look') ? 'look' : 'buy', s: s ? s.getAttribute('data-slug') : '' });
+  }, true);
+})();
+</script>
 </body>
 </html>

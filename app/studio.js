@@ -60,19 +60,22 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
   }
   function captionsFor(j) {
     const s = settings(); const T = tagsFor(j, s); const hook = HOOKS[(j.seq || 0) % HOOKS.length];
-    const price = j.price ? ' · ' + j.price : ''; const url = j.url;
+    const price = j.price ? ' · ' + j.price : '';
+    // links in posts go through dawggammit.com/go/…, which counts the click (platform and video) and forwards to the KoolTeez page
+    const go = ch => `https://dawggammit.com/go/${j.id}/${ch}`; const B = `DAWG GAMMIT™ ${j.name}`;
     const tk = [...T.brand, ...T.product, ...T.xmas.slice(0, 1)].slice(0, 5);
     const ig = [...T.brand, ...T.product, ...T.style, ...T.xmas].slice(0, 10);
     const fb = [...T.brand.slice(0, 1), ...T.product.slice(0, 1), ...T.xmas.slice(0, 1)];
     const yt = [...T.brand.slice(0, 1), ...T.product.slice(0, 1), '#Shorts'];
     return {
-      tiktok: `${hook}\n\n${j.name} — DAWG GAMMIT™, K9's Bark It All The Time™\nGet yours at DawgGammit.com (link in bio)\n\n${tk.join(' ')}`,
-      instagram: `${hook}\n\n${j.name}${price}\nDAWG GAMMIT™ — K9's Bark It All The Time™\n👉 Tap the link in bio: DawgGammit.com\n\n${ig.join(' ')}`,
-      facebook: `${hook}\n\n${j.name}${price}\nDAWG GAMMIT™ — K9's Bark It All The Time™\nGet yours: ${url}\n\n${fb.join(' ')}`,
-      youtubeTitle: `${j.name} | DAWG GAMMIT™ #Shorts`.slice(0, 100),
-      youtube: `${hook}\n\n${j.name}${price}\nGet yours: ${url}\nMore at DawgGammit.com\n\nDAWG GAMMIT™ — K9's Bark It All The Time™\n${yt.join(' ')}`,
-      pinterestTitle: `${j.name} – DAWG GAMMIT™`.slice(0, 100),
-      pinterest: `${j.name}${price}. ${hook} DAWG GAMMIT™ western streetwear for dog lovers with a sense of humour — K9's Bark It All The Time™. ${s.xmasTags ? 'A Christmas gift idea for the outlaw in your life. ' : ''}${[...T.brand, ...T.product, ...T.xmas.slice(0, 2)].join(' ')}`.slice(0, 500),
+      tiktok: `${hook}\n\n${B} — K9's Bark It All The Time™\nGet yours at DawgGammit.com (link in bio)\n\n${tk.join(' ')}`,
+      instagram: `${hook}\n\n${B}${price}\nK9's Bark It All The Time™\n👉 Tap the link in bio: DawgGammit.com\n\n${ig.join(' ')}`,
+      facebook: `${hook}\n\n${B}${price}\nK9's Bark It All The Time™\nGet yours: ${go('facebook')}\n\n${fb.join(' ')}`,
+      youtubeTitle: `${B} #Shorts`.slice(0, 100),
+      youtube: `${hook}\n\n${B}${price}\nGet yours: ${go('youtube')}\nMore at DawgGammit.com\n\nK9's Bark It All The Time™\n${yt.join(' ')}`,
+      pinterestTitle: B.slice(0, 100),
+      pinterest: `${B}${price}. ${hook} Western streetwear for dog lovers with a sense of humour — K9's Bark It All The Time™. ${s.xmasTags ? 'A Christmas gift idea for the outlaw in your life. ' : ''}${[...T.brand, ...T.product, ...T.xmas.slice(0, 2)].join(' ')}`.slice(0, 500),
+      v: 2,
     };
   }
   const ytTags = j => ['dawg gammit', 'k9s bark it all the time', 'western streetwear', 'dog lover gifts', 'christmas gift', ...tagsFor(j, settings()).product.map(t => t.slice(1))]
@@ -132,12 +135,12 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
     const post = (ch, content, settingsObj, media = [V]) => ({ integration: { id: ids[ch] }, value: [{ content, image: media }], settings: settingsObj });
     const posts = [];
     const VC = { ...V, thumbnail: C.path };   // Instagram Reels: use the cover photo as the Reel's cover
-    if (ids.tiktok) posts.push(post('tiktok', c.tiktok, { title: j.name.slice(0, 90), privacy_level: 'PUBLIC_TO_EVERYONE', duet: true, stitch: true, comment: true,
+    if (ids.tiktok) posts.push(post('tiktok', c.tiktok, { title: `DAWG GAMMIT™ ${j.name}`.slice(0, 90), privacy_level: 'PUBLIC_TO_EVERYONE', duet: true, stitch: true, comment: true,
       autoAddMusic: 'no', brand_content_toggle: false, brand_organic_toggle: true, video_made_with_ai: !!s.aiLabel, content_posting_method: 'DIRECT_POST' }));
     if (ids.instagram) posts.push(post('instagram', c.instagram, { post_type: 'post', collaborators: [] }, [VC]));
-    if (ids.facebook) posts.push(post('facebook', c.facebook, { post_type: 'post', title: j.name }));
+    if (ids.facebook) posts.push(post('facebook', c.facebook, { post_type: 'post', title: `DAWG GAMMIT™ ${j.name}` }));
     if (ids.youtube) posts.push(post('youtube', c.youtube, { title: c.youtubeTitle.slice(0, 100), type: 'public', selfDeclaredMadeForKids: 'no', tags: ytTags(j), thumbnail: C }));
-    if (ids.pinterest) posts.push(post('pinterest', c.pinterest, { board: s.pinterestBoard, title: c.pinterestTitle.slice(0, 100), link: j.url }, [V, C]));
+    if (ids.pinterest) posts.push(post('pinterest', c.pinterest, { board: s.pinterestBoard, title: c.pinterestTitle.slice(0, 100), link: `https://dawggammit.com/go/${j.id}/pinterest` }, [V, C]));
     const res = await pz('/public/v1/posts', { method: 'POST', body: JSON.stringify({ type: 'schedule', date: new Date(dateMs).toISOString(), shortLink: false, tags: [], creationMethod: 'API', posts }) });
     return { res, media: { video: V.path, cover: C.path }, channels: Object.keys(ids) };
   }
@@ -189,7 +192,18 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
     linkCache.set(url, out); return out;
   }
 
-  return async function handle(req, res, p) {
+  // one-off: videos still waiting for review get the new brand-first titles and tracked links,
+  // unless their captions were edited by hand (their YouTube title no longer matches the old pattern)
+  try {
+    fs.mkdirSync(JOBS, { recursive: true });
+    for (const id of fs.readdirSync(JOBS).filter(okId)) {
+      const j = readJob(id); if (!j || j.deleted || !j.captions || j.captions.v === 2) continue;
+      if (['scheduled', 'posted', 'scheduling'].includes((j.post || {}).state)) continue;
+      if (j.captions.youtubeTitle === `${j.name} | DAWG GAMMIT™ #Shorts`.slice(0, 100)) { j.captions = captionsFor(j); saveJob(j); }
+    }
+  } catch (e) { console.error('caption update', e.message); }
+
+  async function handle(req, res, p) {
     if (p === '/admin/videos' && req.method === 'GET') return send(res, 200, PAGE, undefined, { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
     let m = p.match(/^\/admin\/studio\/file\/([a-z0-9]+)\/(video\.mp4|video-dl\.mp4|cover\.jpg)$/);
     if (m && req.method === 'GET') { if (!okId(m[1])) return send(res, 404, 'Not found', 'text/plain'); let f = path.join(jobDir(m[1]), m[2]); if (m[2] === 'video-dl.mp4' && !fs.existsSync(f)) f = path.join(jobDir(m[1]), 'video.mp4');
@@ -281,7 +295,7 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
       const j = readJob(body.id); if (!okId(body.id) || !j || j.deleted) return json(res, 404, { error: 'That video is no longer there.' });
       if (j.post && ['scheduled', 'posted', 'scheduling'].includes(j.post.state)) return json(res, 409, { error: 'This video is already scheduled. Unschedule it first to change it.' });
       const P = body.patch || {}; let rerender = false;
-      if (P.captions && typeof P.captions === 'object') for (const k of Object.keys(j.captions)) if (typeof P.captions[k] === 'string') j.captions[k] = P.captions[k].slice(0, k.endsWith('Title') ? 100 : 2200);
+      if (P.captions && typeof P.captions === 'object') for (const k of Object.keys(j.captions)) if (k !== 'v' && typeof P.captions[k] === 'string') j.captions[k] = P.captions[k].slice(0, k.endsWith('Title') ? 100 : 2200);
       for (const k of ['voice', 'track', 'background', 'front', 'back', 'thumb', 'thumbUrl', 'name', 'price']) if (typeof P[k] === 'string' && P[k] !== j[k]) { j[k] = P[k].slice(0, 2000); rerender = true; }
       for (const k of ['showPrice', 'autoThumb']) if (typeof P[k] === 'boolean' && P[k] !== j[k]) { j[k] = P[k]; rerender = true; }
       if (typeof P.thumb === 'string' && P.thumb) j.thumbUrl = '';            // an upload replaces a KoolTeez cover
@@ -341,4 +355,6 @@ module.exports = function studio({ DATA, json, send, readBody, readProduct, getS
     }
     return json(res, 404, { error: 'Not found' });
   };
+  handle.jobInfo = id => { if (!okId(id)) return null; const j = readJob(id); return j ? { id: j.id, name: j.name, slug: j.slug, url: j.url } : null; };
+  return handle;
 };
